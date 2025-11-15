@@ -1,12 +1,14 @@
 import { Heart, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import BottomNavigation from "@/components/BottomNavigation";
+import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 
 const FounderStory = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <Button 
           variant="ghost" 
@@ -172,6 +174,9 @@ const FounderStory = () => {
           </div>
         </div>
       </div>
+      
+      <FloatingWellnessChat />
+      <BottomNavigation />
     </div>
   );
 };

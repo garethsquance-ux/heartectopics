@@ -3,14 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Plus, MessageCircle, LogOut, Activity, Users, BookOpen, Shield, TrendingUp, FileText, BookHeart } from "lucide-react";
+import { Heart, Plus, LogOut, Activity, Shield, TrendingUp, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import EpisodeList from "@/components/EpisodeList";
 import LogEpisodeDialog from "@/components/LogEpisodeDialog";
-import WellnessChatDialog from "@/components/WellnessChatDialog";
 import ExportDataButton from "@/components/ExportDataButton";
 import ComposeDoctorLetterDialog from "@/components/ComposeDoctorLetterDialog";
+import FloatingWellnessChat from "@/components/FloatingWellnessChat";
+import BottomNavigation from "@/components/BottomNavigation";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -201,7 +202,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background pb-20 md:pb-0">
       <div className="container mx-auto p-4 md:p-8 max-w-7xl">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
@@ -284,23 +285,16 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
           <LogEpisodeDialog onEpisodeAdded={fetchEpisodes}>
-            <Button className="gap-2 h-12" size="lg">
+            <Button className="gap-2 h-14 text-base w-full" size="lg">
               <Plus className="h-5 w-5" />
               Log Episode
             </Button>
           </LogEpisodeDialog>
 
-          <WellnessChatDialog>
-            <Button variant="outline" className="gap-2 h-12" size="lg">
-              <MessageCircle className="h-5 w-5" />
-              Wellness Chat
-            </Button>
-          </WellnessChatDialog>
-
           <ComposeDoctorLetterDialog userRole={userRole}>
-            <Button variant="outline" className="gap-2 h-12" size="lg">
+            <Button variant="outline" className="gap-2 h-14 text-base w-full" size="lg">
               <FileText className="h-5 w-5" />
               Doctor Letter
               {!['subscriber', 'admin'].includes(userRole) && (
@@ -311,45 +305,10 @@ const Dashboard = () => {
             </Button>
           </ComposeDoctorLetterDialog>
 
-          <Button
-            variant="outline" 
-            className="gap-2 h-12"
-            size="lg"
-            onClick={() => navigate('/community')}
-          >
-            <Users className="h-5 w-5" />
-            Community
-            {userRole === 'free' && (
-              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                Subscriber
-              </span>
-            )}
-          </Button>
-
-          <Button 
-            variant="outline" 
-            className="gap-2 h-12"
-            size="lg"
-            onClick={() => navigate('/founder-story')}
-          >
-            <BookOpen className="h-5 w-5" />
-            Founder's Story
-          </Button>
-
-          <Button 
-            variant="outline" 
-            className="gap-2 h-12"
-            size="lg"
-            onClick={() => navigate('/success-stories')}
-          >
-            <BookHeart className="h-5 w-5" />
-            Success Stories
-          </Button>
-
           {userRole === 'admin' && (
             <Button 
               variant="outline" 
-              className="gap-2 h-12"
+              className="gap-2 h-14 text-base w-full"
               size="lg"
               onClick={() => navigate('/admin')}
             >
@@ -390,7 +349,7 @@ const Dashboard = () => {
           {hasActiveSubscription && (
             <Button 
               variant="outline" 
-              className="gap-2 h-12"
+              className="gap-2 h-14 text-base w-full"
               size="lg"
               onClick={handleManageSubscription}
               disabled={managingSubscription}
@@ -402,7 +361,7 @@ const Dashboard = () => {
 
           {userRole === 'free' && (
             <Button 
-              className="gap-2 h-12"
+              className="gap-2 h-14 text-base w-full"
               size="lg"
               onClick={() => navigate('/pricing')}
             >
@@ -410,7 +369,9 @@ const Dashboard = () => {
             </Button>
           )}
           
-          <ExportDataButton />
+          <div className="w-full">
+            <ExportDataButton />
+          </div>
         </div>
 
         <Card className="shadow-card">
@@ -432,6 +393,9 @@ const Dashboard = () => {
           editEpisode={editingEpisode}
         />
       </div>
+      
+      <FloatingWellnessChat />
+      <BottomNavigation />
     </div>
   );
 };
