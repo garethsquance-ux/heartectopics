@@ -253,15 +253,20 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {children && (
+        <DialogTrigger asChild>
+          {children}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Log Heart Episode</DialogTitle>
+          <DialogTitle>{editEpisode ? "Edit Episode" : "Log Heart Episode"}</DialogTitle>
           <DialogDescription>
-            Record the details of your ectopic heartbeat episode. Upload medical documents for automatic data extraction.
+            {editEpisode 
+              ? "Update the details of this episode"
+              : "Record the details of your ectopic heartbeat episode. Upload medical documents for automatic data extraction."
+            }
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -387,7 +392,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
               type="button"
               variant="outline"
               onClick={() => {
-                setOpen(false);
+                setDialogOpen(false);
                 // Reset on cancel
                 setSymptoms("");
                 setNotes("");
