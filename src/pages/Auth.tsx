@@ -74,9 +74,18 @@ const Auth = () => {
             throw error;
           }
         } else {
+          // Send welcome email
+          try {
+            await supabase.functions.invoke("send-welcome-email", {
+              body: { email },
+            });
+          } catch (emailError) {
+            console.error("Failed to send welcome email:", emailError);
+          }
+
           toast({
             title: "Account created!",
-            description: "You can now sign in with your credentials.",
+            description: "Welcome! Check your email for a welcome message.",
           });
           navigate("/dashboard");
         }
