@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Heart, TrendingUp, MessageSquare, Users, Shield } from "lucide-react";
+import { Heart, TrendingUp, MessageSquare, Users, Shield, BookCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import SuccessStoryManagement from "@/components/SuccessStoryManagement";
 
 const emailSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }).max(255, { message: "Email must be less than 255 characters" })
@@ -26,6 +27,7 @@ const Admin = () => {
     dailyMessages: 0,
     monthlyMessages: 0,
     flaggedComments: 0,
+    pendingStories: 0,
   });
   const [targetEmail, setTargetEmail] = useState("");
   const [roleAction, setRoleAction] = useState<'add' | 'remove'>('add');
@@ -98,12 +100,19 @@ const Admin = () => {
       .select('*', { count: 'exact', head: true })
       .eq('is_flagged', true);
 
+    // Fetch pending success stories
+    const { count: pendingStories } = await supabase
+      .from('success_stories')
+      .select('*', { count: 'exact', head: true })
+      .eq('moderation_status', 'pending');
+
     setStats({
       totalUsers: totalUsers || 0,
       subscribers: subscribers || 0,
       dailyMessages,
       monthlyMessages,
       flaggedComments: flaggedComments || 0,
+      pendingStories: pendingStories || 0,
     });
   };
 
@@ -167,18 +176,21 @@ const Admin = () => {
               <p className="text-sm text-muted-foreground">Messages Today</p>
             </Card>
 
-            <Card className="p-6 space-y-2">
+            <Card className="p-6 space-y-2 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
               <div className="flex items-center justify-between">
-                <MessageSquare className="w-8 h-8 text-purple-500" />
-                <span className="text-3xl font-bold">{stats.monthlyMessages}</span>
+                <BookCheck className="w-8 h-8 text-green-600" />
+                <span className="text-3xl font-bold">{stats.pendingStories}</span>
               </div>
-              <p className="text-sm text-muted-foreground">Messages This Month</p>
+              <p className="text-sm text-muted-foreground">Stories Pending Review</p>
             </Card>
           </div>
 
-          <Tabs defaultValue="overview" className="space-y-6">
+          <Tabs defaultValue="stories" className="space-y-6">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="stories">
+                Success Stories {stats.pendingStories > 0 && `(${stats.pendingStories})`}
+              </TabsTrigger>
               <TabsTrigger value="moderation">
                 Moderation {stats.flaggedComments > 0 && `(${stats.flaggedComments})`}
               </TabsTrigger>
@@ -208,6 +220,10 @@ const Admin = () => {
                   </div>
                 </div>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="stories" className="space-y-4">
+              <SuccessStoryManagement />
             </TabsContent>
 
             <TabsContent value="moderation" className="space-y-4">
