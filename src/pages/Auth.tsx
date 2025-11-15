@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Heart } from "lucide-react";
+import { Heart, CheckCircle2, Lock, MessageCircle, Users } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -197,6 +197,42 @@ const Auth = () => {
                 : "Already have an account? Sign in"}
             </button>
           </div>
+
+          {!isLogin && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <h3 className="text-sm font-semibold mb-3 text-center">Why create an account?</h3>
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Track your episodes anywhere</p>
+                    <p className="text-xs text-muted-foreground">Access your data from any device, anytime</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Lock className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Private & secure</p>
+                    <p className="text-xs text-muted-foreground">Your health data is encrypted and protected</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <MessageCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">AI wellness support</p>
+                    <p className="text-xs text-muted-foreground">Get reassurance when you need it most</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Users className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Join the community</p>
+                    <p className="text-xs text-muted-foreground">Connect with others who understand (with subscription)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       </div>
