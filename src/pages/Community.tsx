@@ -189,20 +189,39 @@ const Community = () => {
       const currentPost = posts[currentIndex];
       const swapPost = posts[swapIndex];
 
-      // Swap display_order values
+      // Use a temporary value to avoid conflicts during swap
+      const tempOrder = 9999;
+      
+      // Set current post to temp value first
       const { error: error1 } = await supabase
         .from('community_posts')
-        .update({ display_order: swapPost.display_order })
+        .update({ display_order: tempOrder })
         .eq('id', currentPost.id);
 
+      if (error1) throw error1;
+
+      // Update swap post to current post's position
       const { error: error2 } = await supabase
         .from('community_posts')
         .update({ display_order: currentPost.display_order })
         .eq('id', swapPost.id);
 
-      if (error1 || error2) throw error1 || error2;
+      if (error2) throw error2;
+
+      // Finally, move current post to swap position
+      const { error: error3 } = await supabase
+        .from('community_posts')
+        .update({ display_order: swapPost.display_order })
+        .eq('id', currentPost.id);
+
+      if (error3) throw error3;
 
       await fetchPosts();
+      
+      toast({
+        title: "Success",
+        description: "Post order updated",
+      });
     } catch (error) {
       console.error('Error reordering posts:', error);
       toast({
