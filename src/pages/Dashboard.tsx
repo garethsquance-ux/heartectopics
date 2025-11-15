@@ -207,7 +207,10 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background pb-20 md:pb-0">
       <div className="container mx-auto p-4 md:p-8 max-w-7xl">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-          <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={() => navigate('/')}
+          >
             <div className="p-2 bg-primary/10 rounded-full">
               <Heart className="h-8 w-8 text-primary" />
             </div>
