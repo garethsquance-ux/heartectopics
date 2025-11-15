@@ -10,6 +10,18 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { CommunityGuidelines } from "@/components/CommunityGuidelines";
+import { z } from "zod";
+
+const commentSchema = z.object({
+  content: z.string()
+    .trim()
+    .min(1, { message: "Comment cannot be empty" })
+    .max(1000, { message: "Comment must be less than 1000 characters" })
+    .refine(
+      (val) => !/<script|javascript:|onerror=/i.test(val),
+      { message: "Comment contains invalid content" }
+    )
+});
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,7 +123,16 @@ const CommunityPost = () => {
   };
 
   const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
+    // Validate comment
+    const validation = commentSchema.safeParse({ content: newComment });
+    if (!validation.success) {
+      toast({
+        title: "Validation Error",
+        description: validation.error.errors[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
 
     setSubmitting(true);
     const { data: { session } } = await supabase.auth.getSession();
@@ -130,7 +151,7 @@ const CommunityPost = () => {
     try {
       const { data: moderationData, error: moderationError } = await supabase.functions.invoke(
         'moderate-content',
-        { body: { content: newComment } }
+        { body: { content: validation.data.content } }
       );
 
       if (!moderationError && moderationData && !moderationData.safe) {
@@ -152,7 +173,7 @@ const CommunityPost = () => {
       .insert({
         post_id: postId,
         user_id: session.user.id,
-        content: newComment,
+        content: validation.data.content,
       });
 
     if (error) {
