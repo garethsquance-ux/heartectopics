@@ -11,6 +11,7 @@ const Pricing = () => {
   const { toast } = useToast();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscribing, setSubscribing] = useState(false);
 
   useEffect(() => {
     checkUserRole();
@@ -22,6 +23,17 @@ const Pricing = () => {
       if (!session) {
         setLoading(false);
         return;
+      }
+
+      // Check subscription status from Stripe
+      const { data: subData, error: subError } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (subError) {
+        console.error('Error checking subscription:', subError);
       }
 
       const { data, error } = await supabase
@@ -41,11 +53,40 @@ const Pricing = () => {
     }
   };
 
-  const handleSubscribe = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Stripe payment integration will be available soon. Contact us to subscribe manually.",
-    });
+  const handleSubscribe = async () => {
+    try {
+      setSubscribing(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.url) {
+        // Open Stripe Checkout in new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start checkout process. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   return (
@@ -175,9 +216,9 @@ const Pricing = () => {
             <Button 
               className="w-full"
               onClick={handleSubscribe}
-              disabled={userRole === 'subscriber' || userRole === 'admin'}
+              disabled={subscribing || userRole === 'subscriber' || userRole === 'admin'}
             >
-              {userRole === 'subscriber' || userRole === 'admin' ? 'Current Plan' : 'Subscribe Now'}
+              {subscribing ? 'Opening Checkout...' : (userRole === 'subscriber' || userRole === 'admin' ? 'Current Plan' : 'Subscribe Now')}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">
