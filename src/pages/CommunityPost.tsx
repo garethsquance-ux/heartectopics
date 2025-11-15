@@ -27,6 +27,7 @@ interface Post {
   content: string;
   category: string;
   created_at: string;
+  comments_enabled: boolean;
 }
 
 interface Comment {
@@ -271,70 +272,72 @@ const CommunityPost = () => {
 
           <CommunityGuidelines />
 
-          <Card className="p-6 space-y-6">
-            <h2 className="text-2xl font-semibold">Comments ({comments.length})</h2>
-            
-            <div className="space-y-4">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Share your thoughts..."
-                rows={4}
-              />
-              <Button 
-                onClick={handleSubmitComment}
-                disabled={submitting || !newComment.trim()}
-              >
-                Post Comment
-              </Button>
-            </div>
+          {post.comments_enabled && (
+            <Card className="p-6 space-y-6">
+              <h2 className="text-2xl font-semibold">Comments ({comments.length})</h2>
+              
+              <div className="space-y-4">
+                <Textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Share your thoughts..."
+                  rows={4}
+                />
+                <Button 
+                  onClick={handleSubmitComment}
+                  disabled={submitting || !newComment.trim()}
+                >
+                  Post Comment
+                </Button>
+              </div>
 
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <Card key={comment.id} className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                      </p>
-                      <p className="whitespace-pre-wrap">{comment.content}</p>
+              <div className="space-y-4">
+                {comments.map((comment) => (
+                  <Card key={comment.id} className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                        </p>
+                        <p className="whitespace-pre-wrap">{comment.content}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {(isAdmin || comment.user_id === currentUserId) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteCommentId(comment.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {!comment.is_flagged && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleFlagComment(comment.id)}
+                          >
+                            <Flag className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      {(isAdmin || comment.user_id === currentUserId) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeleteCommentId(comment.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                      {!comment.is_flagged && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleFlagComment(comment.id)}
-                        >
-                          <Flag className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  {comment.is_flagged && (
-                    <Badge variant="destructive" className="text-xs">
-                      Flagged for review
-                    </Badge>
-                  )}
-                </Card>
-              ))}
-              {comments.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                  No comments yet. Be the first to share your thoughts!
-                </p>
-              )}
-            </div>
-          </Card>
+                    {comment.is_flagged && (
+                      <Badge variant="destructive" className="text-xs">
+                        Flagged for review
+                      </Badge>
+                    )}
+                  </Card>
+                ))}
+                {comments.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    No comments yet. Be the first to share your thoughts!
+                  </p>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
 

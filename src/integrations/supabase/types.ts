@@ -59,6 +59,7 @@ export type Database = {
         Row: {
           author_id: string
           category: string
+          comments_enabled: boolean | null
           content: string
           created_at: string
           display_order: number | null
@@ -70,6 +71,7 @@ export type Database = {
         Insert: {
           author_id: string
           category: string
+          comments_enabled?: boolean | null
           content: string
           created_at?: string
           display_order?: number | null
@@ -81,6 +83,7 @@ export type Database = {
         Update: {
           author_id?: string
           category?: string
+          comments_enabled?: boolean | null
           content?: string
           created_at?: string
           display_order?: number | null
