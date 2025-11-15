@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Heart, Flag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { SEO } from "@/components/SEO";
 
 interface Post {
   id: string;
@@ -152,7 +153,19 @@ const CommunityPost = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <>
+      <SEO
+        title={post.title}
+        description={post.content.substring(0, 155) + "..."}
+        keywords={`${post.category.replace(/_/g, ' ')}, ectopic heartbeats, PVC, heart palpitations`}
+        ogType="article"
+        article={{
+          publishedTime: post.created_at,
+          section: post.category,
+          tags: ['ectopic heartbeats', 'PVC', post.category.replace(/_/g, ' ')]
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
@@ -231,6 +244,7 @@ const CommunityPost = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { SEO } from "@/components/SEO";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -90,7 +91,33 @@ const Pricing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <>
+      <SEO
+        title="Pricing - Subscriber Support"
+        description="Join our subscriber community for exclusive access to research, AI wellness chat, and peer support for ectopic heartbeats and PVCs. Free basic tracking or premium features for £5/month."
+        keywords="ectopic heartbeat support subscription, PVC support community, heart palpitation premium features, heart wellness membership"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": "Heart Wellness Tracker Subscription",
+          "description": "Premium access to ectopic heartbeat support community and wellness features",
+          "offers": [
+            {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "GBP",
+              "name": "Free Plan"
+            },
+            {
+              "@type": "Offer",
+              "price": "5",
+              "priceCurrency": "GBP",
+              "name": "Subscriber Plan"
+            }
+          ]
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
@@ -246,6 +273,7 @@ const Pricing = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
