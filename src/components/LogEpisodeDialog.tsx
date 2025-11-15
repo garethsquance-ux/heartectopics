@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,21 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+interface Episode {
+  id: string;
+  episode_date: string;
+  severity?: string;
+  symptoms?: string;
+  notes?: string;
+  duration_seconds?: number;
+}
+
 interface LogEpisodeDialogProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   onEpisodeAdded: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  editEpisode?: Episode | null;
 }
 
 interface ExtractedData {
@@ -27,8 +39,12 @@ interface ExtractedData {
   };
 }
 
-const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) => {
-  const [open, setOpen] = useState(false);
+const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEpisode }: LogEpisodeDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = open !== undefined;
+  const dialogOpen = isControlled ? open : internalOpen;
+  const setDialogOpen = isControlled ? (onOpenChange || (() => {})) : setInternalOpen;
+
   const [loading, setLoading] = useState(false);
   const [symptoms, setSymptoms] = useState("");
   const [notes, setNotes] = useState("");
@@ -39,6 +55,25 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) =
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Update form when editing an episode
+  useEffect(() => {
+    if (editEpisode) {
+      setSymptoms(editEpisode.symptoms || "");
+      setNotes(editEpisode.notes || "");
+      setDuration(editEpisode.duration_seconds ? String(editEpisode.duration_seconds) : "");
+      setSeverity(editEpisode.severity || "mild");
+    } else if (!dialogOpen) {
+      // Reset form when dialog closes and not editing
+      setSymptoms("");
+      setNotes("");
+      setDuration("");
+      setSeverity("mild");
+      setUploadedFile(null);
+      setExtractedData(null);
+      setUploadError(null);
+    }
+  }, [editEpisode, dialogOpen]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -204,7 +239,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) =
       setUploadedFile(null);
       setExtractedData(null);
       setUploadError(null);
-      setOpen(false);
+      setDialogOpen(false);
       onEpisodeAdded();
     } catch (error: any) {
       toast({
