@@ -26,12 +26,12 @@ const EpisodeTimer = ({ startTime }: EpisodeTimerProps) => {
   };
 
   return (
-    <Card className="p-6 bg-card/50 backdrop-blur">
+    <Card className="p-6 bg-green-50/50 backdrop-blur border-green-200">
       <div className="flex items-center gap-3">
-        <Clock className="h-6 w-6 text-primary" />
+        <Clock className="h-6 w-6 text-green-600" />
         <div>
-          <p className="text-sm text-muted-foreground">Episode Duration</p>
-          <p className="text-3xl font-bold text-foreground">{formatTime(elapsed)}</p>
+          <p className="text-sm text-green-600">Episode Duration</p>
+          <p className="text-3xl font-bold text-green-900">{formatTime(elapsed)}</p>
         </div>
       </div>
     </Card>
