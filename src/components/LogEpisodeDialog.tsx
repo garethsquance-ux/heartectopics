@@ -110,34 +110,41 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
     setAnalyzing(true);
     try {
       let documentText = '';
+      let imageData = '';
       
-      // Read text-based files directly
+      // Handle different file types
       if (file.type === 'text/plain' || 
           file.type === 'application/msword' ||
           file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         documentText = await file.text();
       } else if (file.type.startsWith('image/')) {
-        // For images, inform that visual analysis isn't available yet
-        setUploadError("Image analysis not yet available. Please convert medical images to text or use text-based reports.");
-        setAnalyzing(false);
-        return;
+        // For images, convert to base64 for vision analysis
+        imageData = await fileToBase64(file);
       } else if (file.type === 'application/pdf') {
-        // For PDFs, inform that PDF parsing isn't available yet
-        setUploadError("PDF analysis not yet available. Please use text-based documents (.txt, .docx) for best results.");
-        setAnalyzing(false);
-        return;
+        // For PDFs, read as text (basic support)
+        documentText = await file.text();
+        if (!documentText.trim()) {
+          setUploadError("PDF text extraction failed. Please convert to text format or use images instead.");
+          setAnalyzing(false);
+          return;
+        }
       } else {
         documentText = await file.text();
       }
 
-      if (!documentText.trim()) {
+      if (!documentText.trim() && !imageData) {
         setUploadError("Document appears to be empty or unreadable");
         setAnalyzing(false);
         return;
       }
 
       const { data, error } = await supabase.functions.invoke('analyze-medical-document', {
-        body: { documentText, fileName: file.name }
+        body: {
+          documentText,
+          imageData,
+          fileName: file.name,
+          fileType: file.type
+        }
       });
 
       if (error) throw error;
@@ -288,7 +295,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             <div className="space-y-2">
               <Label htmlFor="document">Upload Medical Document (Optional)</Label>
               <p className="text-xs text-muted-foreground">
-                Best results: Text files (.txt) or Word documents (.docx). PDF and image analysis coming soon.
+                Supports text files, Word docs, images (JPG/PNG with AI vision), and PDFs. AI extracts episode details automatically.
               </p>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -351,7 +358,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Best results with text files (.txt) or Word documents (.docx) - max 20MB. AI will extract episode details automatically.
+                Supported formats: .txt, .docx, .jpg, .png, .pdf (max 20MB). Images use AI vision for OCR.
               </p>
             </div>
 
