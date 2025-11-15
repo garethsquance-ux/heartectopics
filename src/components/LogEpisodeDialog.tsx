@@ -92,11 +92,12 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       'image/jpg',
       'image/png',
       'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
     ];
     
     if (!allowedTypes.includes(file.type)) {
-      setUploadError("Please upload a PDF, image (JPG/PNG), or Word document");
+      setUploadError("Please upload a PDF, image (JPG/PNG), Word document, or text file");
       return;
     }
 
@@ -108,19 +109,31 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
   const analyzeDocument = async (file: File) => {
     setAnalyzing(true);
     try {
-      // Read file as text or use OCR for images
       let documentText = '';
       
-      if (file.type.startsWith('image/')) {
-        // For images, we'll send the base64 and let the AI analyze it
-        const base64 = await fileToBase64(file);
-        documentText = `[Medical document image: ${file.name}]\nPlease analyze this medical image for ectopic heartbeat episode information.`;
-      } else if (file.type === 'application/pdf') {
-        // For PDFs, we'd ideally use a PDF parser, but for now we'll inform the user
-        documentText = `[PDF document: ${file.name}]\nThis is a medical document related to ectopic heartbeats. Please extract relevant episode information.`;
-      } else {
-        // For text-based files, read directly
+      // Read text-based files directly
+      if (file.type === 'text/plain' || 
+          file.type === 'application/msword' ||
+          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         documentText = await file.text();
+      } else if (file.type.startsWith('image/')) {
+        // For images, inform that visual analysis isn't available yet
+        setUploadError("Image analysis not yet available. Please convert medical images to text or use text-based reports.");
+        setAnalyzing(false);
+        return;
+      } else if (file.type === 'application/pdf') {
+        // For PDFs, inform that PDF parsing isn't available yet
+        setUploadError("PDF analysis not yet available. Please use text-based documents (.txt, .docx) for best results.");
+        setAnalyzing(false);
+        return;
+      } else {
+        documentText = await file.text();
+      }
+
+      if (!documentText.trim()) {
+        setUploadError("Document appears to be empty or unreadable");
+        setAnalyzing(false);
+        return;
       }
 
       const { data, error } = await supabase.functions.invoke('analyze-medical-document', {
@@ -274,13 +287,16 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             {/* Document Upload Section */}
             <div className="space-y-2">
               <Label htmlFor="document">Upload Medical Document (Optional)</Label>
+              <p className="text-xs text-muted-foreground">
+                Best results: Text files (.txt) or Word documents (.docx). PDF and image analysis coming soon.
+              </p>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <Input
                     id="document"
                     type="file"
                     onChange={handleFileSelect}
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt"
                     className="flex-1"
                     disabled={analyzing || loading}
                   />
@@ -335,7 +351,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Supported: PDF, JPG, PNG, Word documents (max 20MB). AI will extract episode details automatically.
+                Best results with text files (.txt) or Word documents (.docx) - max 20MB. AI will extract episode details automatically.
               </p>
             </div>
 
