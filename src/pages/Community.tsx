@@ -185,10 +185,16 @@ const Community = () => {
     const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     if (swapIndex < 0 || swapIndex >= posts.length) return;
 
-    try {
-      const currentPost = posts[currentIndex];
-      const swapPost = posts[swapIndex];
+    const currentPost = posts[currentIndex];
+    const swapPost = posts[swapIndex];
 
+    // Optimistically update UI immediately
+    const newPosts = [...posts];
+    newPosts[currentIndex] = swapPost;
+    newPosts[swapIndex] = currentPost;
+    setPosts(newPosts);
+
+    try {
       // Use a temporary value to avoid conflicts during swap
       const tempOrder = 9999;
       
@@ -216,6 +222,7 @@ const Community = () => {
 
       if (error3) throw error3;
 
+      // Refresh from database to ensure consistency
       await fetchPosts();
       
       toast({
@@ -224,6 +231,8 @@ const Community = () => {
       });
     } catch (error) {
       console.error('Error reordering posts:', error);
+      // Revert on error
+      setPosts(posts);
       toast({
         title: "Error",
         description: "Failed to reorder posts",
