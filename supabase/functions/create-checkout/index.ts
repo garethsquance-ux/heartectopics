@@ -33,6 +33,11 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Get priceId from request body
+    const { priceId } = await req.json();
+    if (!priceId) throw new Error("Price ID is required");
+    logStep("Price ID received", { priceId });
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
     });
@@ -53,7 +58,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SThaiBv24OAipkGa8UVijag", // £9.99/month Subscriber plan
+          price: priceId,
           quantity: 1,
         },
       ],
