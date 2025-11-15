@@ -17,17 +17,31 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string>('free');
   const [stats, setStats] = useState({ total: 0, thisWeek: 0, thisMonth: 0 });
+  const [managingSubscription, setManagingSubscription] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     checkUser();
+    
+    // Check for subscription success URL param
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('subscription') === 'success') {
+      toast({
+        title: "Welcome, Subscriber! 🎉",
+        description: "Your subscription is now active. Enjoy full access to the community and enhanced features!",
+      });
+      // Clean URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
+
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         navigate('/auth');
       } else if (session?.user) {
         setUser(session.user);
         fetchUserRole(session.user.id);
+        checkSubscriptionStatus(session.access_token);
       }
     });
 
@@ -45,7 +59,59 @@ const Dashboard = () => {
     setUser(session.user);
     await fetchEpisodes();
     await fetchUserRole(session.user.id);
+    await checkSubscriptionStatus(session.access_token);
     setLoading(false);
+  };
+
+  const checkSubscriptionStatus = async (accessToken: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error checking subscription:', error);
+      }
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      setManagingSubscription(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open subscription management. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setManagingSubscription(false);
+    }
   };
 
   const fetchUserRole = async (userId: string) => {
@@ -243,7 +309,20 @@ const Dashboard = () => {
               onClick={() => navigate('/admin')}
             >
               <Shield className="h-5 w-5" />
-              Admin
+              Admin Dashboard
+            </Button>
+          )}
+
+          {(userRole === 'subscriber' || userRole === 'admin') && (
+            <Button 
+              variant="outline" 
+              className="gap-2 h-12"
+              size="lg"
+              onClick={handleManageSubscription}
+              disabled={managingSubscription}
+            >
+              <TrendingUp className="h-5 w-5" />
+              {managingSubscription ? 'Opening...' : 'Manage Subscription'}
             </Button>
           )}
 
@@ -253,7 +332,7 @@ const Dashboard = () => {
               size="lg"
               onClick={() => navigate('/pricing')}
             >
-              ⭐ Upgrade
+              ⭐ Upgrade to Subscriber
             </Button>
           )}
           
