@@ -9,6 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, TrendingUp, MessageSquare, Users, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const emailSchema = z.object({
+  email: z.string().trim().email({ message: "Invalid email address" }).max(255, { message: "Email must be less than 255 characters" })
+});
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -289,15 +294,29 @@ const Admin = () => {
                     onClick={async () => {
                       try {
                         setUpdatingRole(true);
+                        
+                        // Validate email
+                        const validation = emailSchema.safeParse({ email: targetEmail });
+                        if (!validation.success) {
+                          toast({ 
+                            title: 'Validation Error', 
+                            description: validation.error.errors[0].message, 
+                            variant: 'destructive' 
+                          });
+                          setUpdatingRole(false);
+                          return;
+                        }
+                        
                         const { data: { session } } = await supabase.auth.getSession();
                         if (!session) throw new Error('Not authenticated');
                         const { data, error } = await supabase.functions.invoke('manage-roles', {
                           headers: { Authorization: `Bearer ${session.access_token}` },
-                          body: { action: roleAction, role: roleName, user_email: targetEmail }
+                          body: { action: roleAction, role: roleName, user_email: validation.data.email }
                         });
                         if (error) throw error;
                         if (data?.ok) {
                           toast({ title: 'Success', description: data.message || 'Role updated' });
+                          setTargetEmail(''); // Clear input after success
                         } else {
                           throw new Error(data?.error || 'Unknown error');
                         }
