@@ -54,7 +54,7 @@ export const CreatePostDialog = ({ open, onOpenChange, onPostCreated }: CreatePo
     defaultValues: {
       title: "",
       content: "",
-      category: "research",
+      category: "guide",
     },
   });
 

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Send, Bot, User, MessageCircle } from "lucide-react";
@@ -27,7 +28,33 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userRole, setUserRole] = useState<'free' | 'subscriber' | 'admin'>('free');
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (open) {
+      checkUserRole();
+    }
+  }, [open]);
+
+  const checkUserRole = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id);
+
+    if (roles && roles.length > 0) {
+      // Priority: admin > subscriber > free
+      if (roles.some(r => r.role === 'admin')) {
+        setUserRole('admin');
+      } else if (roles.some(r => r.role === 'subscriber')) {
+        setUserRole('subscriber');
+      }
+    }
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -118,14 +145,21 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
                   message.role === 'user' && "flex-row-reverse"
                 )}
               >
-                <div className={cn(
-                  "p-2 rounded-full shrink-0",
-                  message.role === 'user' ? "bg-primary/10" : "bg-accent"
-                )}>
-                  {message.role === 'user' ? (
-                    <User className="h-5 w-5 text-primary" />
-                  ) : (
-                    <Bot className="h-5 w-5 text-foreground" />
+                <div className="flex flex-col items-center gap-1">
+                  <div className={cn(
+                    "p-2 rounded-full shrink-0",
+                    message.role === 'user' ? "bg-primary/10" : "bg-accent"
+                  )}>
+                    {message.role === 'user' ? (
+                      <User className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Bot className="h-5 w-5 text-foreground" />
+                    )}
+                  </div>
+                  {message.role === 'user' && (userRole === 'subscriber' || userRole === 'admin') && (
+                    <Badge variant={userRole === 'admin' ? 'default' : 'secondary'} className="text-xs px-1 py-0 h-4">
+                      {userRole === 'admin' ? '👑' : '⭐'}
+                    </Badge>
                   )}
                 </div>
                 <div
