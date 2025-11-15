@@ -1,7 +1,21 @@
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, Calendar, AlertCircle, Pencil, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface Episode {
   id: string;
@@ -18,7 +32,24 @@ interface EpisodeListProps {
   onEdit?: (episode: Episode) => void;
 }
 
-const EpisodeList = ({ episodes, onUpdate }: EpisodeListProps) => {
+const EpisodeList = ({ episodes, onUpdate, onEdit }: EpisodeListProps) => {
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async (id: string) => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from("heart_episodes").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Episode deleted");
+      onUpdate();
+    } catch (error) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
+    }
+  };
   const getSeverityColor = (severity?: string) => {
     switch (severity) {
       case 'severe':
@@ -61,11 +92,21 @@ const EpisodeList = ({ episodes, onUpdate }: EpisodeListProps) => {
               <Calendar className="h-4 w-4" />
               <span>{format(new Date(episode.episode_date), 'PPp')}</span>
             </div>
-            {episode.severity && (
-              <Badge className={getSeverityColor(episode.severity)}>
-                {episode.severity}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {episode.severity && (
+                <Badge className={getSeverityColor(episode.severity)}>
+                  {episode.severity}
+                </Badge>
+              )}
+              {onEdit && (
+                <Button variant="ghost" size="icon" onClick={() => onEdit(episode)} className="h-8 w-8">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" onClick={() => setDeleteId(episode.id)} className="h-8 w-8 text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           {episode.symptoms && (
@@ -90,6 +131,21 @@ const EpisodeList = ({ episodes, onUpdate }: EpisodeListProps) => {
           )}
         </Card>
       ))}
+
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Episode</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteId && handleDelete(deleteId)} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
