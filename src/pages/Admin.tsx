@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, TrendingUp, MessageSquare, Users, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,6 +22,10 @@ const Admin = () => {
     monthlyMessages: 0,
     flaggedComments: 0,
   });
+  const [targetEmail, setTargetEmail] = useState("");
+  const [roleAction, setRoleAction] = useState<'add' | 'remove'>('add');
+  const [roleName, setRoleName] = useState<'subscriber' | 'admin'>('subscriber');
+  const [updatingRole, setUpdatingRole] = useState(false);
 
   useEffect(() => {
     checkAdmin();
