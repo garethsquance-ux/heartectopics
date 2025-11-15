@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 const postSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters").max(200),
   content: z.string().min(50, "Content must be at least 50 characters"),
-  category: z.enum(["research", "medical_advances", "studies", "personal_stories"]),
+  category: z.enum(["guide", "research", "medical_advances", "studies", "personal_stories"]),
 });
 
 type PostFormData = z.infer<typeof postSchema>;
@@ -142,6 +142,7 @@ export const CreatePostDialog = ({ open, onOpenChange, onPostCreated }: CreatePo
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="guide">Guide / How-To</SelectItem>
                       <SelectItem value="research">Research</SelectItem>
                       <SelectItem value="medical_advances">Medical Advances</SelectItem>
                       <SelectItem value="studies">Studies</SelectItem>
