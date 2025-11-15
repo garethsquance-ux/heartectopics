@@ -43,7 +43,7 @@ const FounderStory = () => {
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold">The Spiral of Fear and PTSD</h2>
               <p className="text-muted-foreground leading-relaxed">
-                I've rushed myself to the emergency room on so many occasions. I've undergone multiple EP studies, countless tests, 
+                I've rushed myself to the hospital on so many occasions. I've undergone multiple EP studies, countless tests, 
                 doctor visits that all ended with the same message: "They're benign. Try not to worry." But anyone living with this 
                 knows—you can't just "not worry."
               </p>
@@ -80,7 +80,7 @@ const FounderStory = () => {
                 <li>Know they're not alone in this experience</li>
               </ul>
               <p className="text-muted-foreground leading-relaxed mt-4">
-                This isn't just an app—it's the support system I wish I'd had all those years ago when I was rushing to the ER, 
+                This isn't just an app—it's the support system I wish I'd had all those years ago when I was rushing to the hospital, 
                 convinced something was seriously wrong, feeling utterly alone.
               </p>
             </section>
