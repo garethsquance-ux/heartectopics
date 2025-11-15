@@ -27,7 +27,7 @@ interface Post {
   id: string;
   title: string;
   content: string;
-  category: "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
+  category: "general" | "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
   created_at: string;
   author_id: string;
   display_order: number | null;
@@ -48,7 +48,7 @@ const Community = () => {
   const [editPostData, setEditPostData] = useState<{
     title: string;
     content: string;
-    category: "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
+    category: "general" | "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
     comments_enabled: boolean;
   } | null>(null);
 
@@ -162,7 +162,7 @@ const Community = () => {
     setEditPostData({
       title: post.title,
       content: post.content,
-      category: post.category as "guide" | "research" | "medical_advances" | "studies" | "personal_stories",
+      category: post.category as "general" | "guide" | "research" | "medical_advances" | "studies" | "personal_stories",
       comments_enabled: post.comments_enabled,
     });
   };
@@ -269,6 +269,7 @@ const Community = () => {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
+      general: "bg-muted text-muted-foreground",
       guide: "bg-primary/10 text-primary",
       research: "bg-blue-500/10 text-blue-500",
       medical_advances: "bg-green-500/10 text-green-500",

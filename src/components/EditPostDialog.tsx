@@ -35,7 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 const postSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().min(1, "Content is required"),
-  category: z.enum(["guide", "research", "medical_advances", "studies", "personal_stories"]),
+  category: z.enum(["general", "guide", "research", "medical_advances", "studies", "personal_stories"]),
   comments_enabled: z.boolean(),
 });
 
@@ -49,7 +49,7 @@ interface EditPostDialogProps {
   initialData: {
     title: string;
     content: string;
-    category: "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
+    category: "general" | "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
     comments_enabled: boolean;
   };
 }
@@ -159,6 +159,7 @@ const EditPostDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="general">General</SelectItem>
                       <SelectItem value="guide">Guide</SelectItem>
                       <SelectItem value="research">Research</SelectItem>
                       <SelectItem value="medical_advances">Medical Advances</SelectItem>
