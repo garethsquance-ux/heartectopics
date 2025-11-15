@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { CreatePostDialog } from "@/components/CreatePostDialog";
 import { SEO } from "@/components/SEO";
+import BottomNavigation from "@/components/BottomNavigation";
+import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -243,7 +245,7 @@ const Community = () => {
           description="Join our subscriber community for the latest research, medical advances, and peer support for ectopic heartbeats and PVCs."
           keywords="ectopic heartbeat community, PVC support group, heart palpitations forum"
         />
-        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
         <div className="container mx-auto px-4 py-12">
           <Button 
             variant="ghost" 
@@ -297,7 +299,7 @@ const Community = () => {
         description="Latest research, medical advances, and personal stories about ectopic heartbeats (PVCs). Connect with others who understand your journey with premature ventricular contractions."
         keywords="ectopic heartbeat research, PVC studies, heart palpitations support, premature ventricular contractions information, ectopic beat stories"
       />
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
@@ -477,6 +479,9 @@ const Community = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <FloatingWellnessChat />
+      <BottomNavigation />
     </div>
     </>
   );

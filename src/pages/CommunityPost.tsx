@@ -11,6 +11,8 @@ import { formatDistanceToNow } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { CommunityGuidelines } from "@/components/CommunityGuidelines";
 import { z } from "zod";
+import BottomNavigation from "@/components/BottomNavigation";
+import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 
 const commentSchema = z.object({
   content: z.string()
@@ -267,7 +269,7 @@ const CommunityPost = () => {
           tags: ['ectopic heartbeats', 'PVC', post.category.replace(/_/g, ' ')]
         }}
       />
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
@@ -378,6 +380,9 @@ const CommunityPost = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <FloatingWellnessChat />
+      <BottomNavigation />
     </div>
     </>
   );

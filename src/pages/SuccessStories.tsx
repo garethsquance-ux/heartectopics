@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Send, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import BottomNavigation from "@/components/BottomNavigation";
+import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 
 interface Story {
   id: string;
@@ -127,7 +129,7 @@ const SuccessStories = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background p-4 pb-20 md:pb-4">
       <div className="max-w-4xl mx-auto py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -242,6 +244,9 @@ const SuccessStories = () => {
           )}
         </div>
       </div>
+      
+      <FloatingWellnessChat />
+      <BottomNavigation />
     </div>
   );
 };
