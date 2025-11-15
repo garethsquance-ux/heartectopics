@@ -13,6 +13,7 @@ import ExportDataButton from "@/components/ExportDataButton";
 import ComposeDoctorLetterDialog from "@/components/ComposeDoctorLetterDialog";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 import BottomNavigation from "@/components/BottomNavigation";
+import DesktopNavigation from "@/components/DesktopNavigation";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -205,7 +206,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background pb-20 md:pb-0">
       <div className="container mx-auto p-4 md:p-8 max-w-7xl">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-full">
               <Heart className="h-8 w-8 text-primary" />
@@ -220,10 +221,14 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <Button variant="outline" onClick={handleSignOut} className="gap-2">
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </Button>
+          
+          <div className="flex items-center gap-3">
+            <DesktopNavigation />
+            <Button variant="outline" onClick={handleSignOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3 mb-8">
