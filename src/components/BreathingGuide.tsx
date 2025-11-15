@@ -51,7 +51,7 @@ const BreathingGuide = () => {
   return (
     <div className="flex flex-col items-center justify-center space-y-8">
       <motion.div
-        className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-primary/60"
+        className="w-32 h-32 rounded-full bg-gradient-to-br from-green-500 to-green-400 shadow-lg shadow-green-300/50"
         animate={{
           scale: getScale(),
         }}
@@ -62,9 +62,9 @@ const BreathingGuide = () => {
       />
       
       <div className="text-center space-y-2">
-        <p className="text-3xl font-bold text-primary">{getInstruction()}</p>
-        <p className="text-6xl font-bold text-foreground">{countdown}</p>
-        <p className="text-sm text-muted-foreground">Follow the circle</p>
+        <p className="text-3xl font-bold text-green-700">{getInstruction()}</p>
+        <p className="text-6xl font-bold text-green-900">{countdown}</p>
+        <p className="text-sm text-green-600">Follow the circle</p>
       </div>
     </div>
   );

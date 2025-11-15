@@ -303,16 +303,16 @@ const Dashboard = () => {
           {/* Emergency Mode Button - Premium Feature */}
           {(userRole === 'premium' || userRole === 'admin') ? (
             <Button 
-              className="gap-2 h-14 text-base w-full bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 text-white border-2 border-destructive/20 shadow-lg animate-pulse"
+              className="gap-2 h-14 text-base w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white border-2 border-green-400/20 shadow-lg animate-pulse"
               size="lg"
               onClick={() => navigate('/episode-mode')}
             >
               <AlertCircle className="h-5 w-5" />
-              🚨 Having Episode Now
+              🫀 Having Episode Now
             </Button>
           ) : (
             <Button 
-              className="gap-2 h-14 text-base w-full"
+              className="gap-2 h-14 text-base w-full border-green-600/30 hover:bg-green-50/50"
               size="lg"
               variant="outline"
               onClick={() => {
@@ -323,8 +323,8 @@ const Dashboard = () => {
                 navigate('/pricing');
               }}
             >
-              <AlertCircle className="h-5 w-5" />
-              🚨 During Episode Mode
+              <AlertCircle className="h-5 w-5 text-green-600" />
+              🫀 During Episode Mode
               <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
                 Premium
               </span>

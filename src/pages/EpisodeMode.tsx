@@ -118,12 +118,12 @@ const EpisodeMode = () => {
 
       <div className="w-full max-w-4xl space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-primary">You're Safe</h1>
-          <p className="text-xl text-muted-foreground">This will pass. Focus on your breathing.</p>
+          <h1 className="text-4xl font-bold text-green-700">You're Safe</h1>
+          <p className="text-xl text-green-600">This will pass. Focus on your breathing.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <Card className="p-8 flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <Card className="p-8 flex items-center justify-center bg-gradient-to-br from-green-100/50 to-green-50/30 border-green-200">
             <BreathingGuide />
           </Card>
 
@@ -149,7 +149,7 @@ const EpisodeMode = () => {
           <Button
             size="lg"
             onClick={handleEndEpisode}
-            className="px-12"
+            className="px-12 bg-green-600 hover:bg-green-700 text-white"
           >
             Mark Episode as Ended
           </Button>
