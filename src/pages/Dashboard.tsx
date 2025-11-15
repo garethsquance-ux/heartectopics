@@ -20,6 +20,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ total: 0, thisWeek: 0, thisMonth: 0 });
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [editingEpisode, setEditingEpisode] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -168,6 +170,18 @@ const Dashboard = () => {
       thisWeek,
       thisMonth,
     });
+  };
+
+  const handleEditEpisode = (episode: any) => {
+    setEditingEpisode(episode);
+    setShowEditDialog(true);
+  };
+
+  const handleEditDialogChange = (open: boolean) => {
+    setShowEditDialog(open);
+    if (!open) {
+      setEditingEpisode(null);
+    }
   };
 
   const handleSignOut = async () => {
@@ -404,9 +418,16 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <EpisodeList episodes={episodes} onUpdate={fetchEpisodes} />
+            <EpisodeList episodes={episodes} onUpdate={fetchEpisodes} onEdit={handleEditEpisode} />
           </CardContent>
         </Card>
+
+        <LogEpisodeDialog 
+          open={showEditDialog}
+          onOpenChange={handleEditDialogChange}
+          onEpisodeAdded={fetchEpisodes}
+          editEpisode={editingEpisode}
+        />
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ interface Episode {
 interface EpisodeListProps {
   episodes: Episode[];
   onUpdate: () => void;
+  onEdit?: (episode: Episode) => void;
 }
 
 const EpisodeList = ({ episodes, onUpdate }: EpisodeListProps) => {
