@@ -1,0 +1,144 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface LogEpisodeDialogProps {
+  children: React.ReactNode;
+  onEpisodeAdded: () => void;
+}
+
+const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) => {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [symptoms, setSymptoms] = useState("");
+  const [notes, setNotes] = useState("");
+  const [duration, setDuration] = useState("");
+  const [severity, setSeverity] = useState("mild");
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("Not authenticated");
+      }
+
+      const { error } = await supabase.from('heart_episodes').insert({
+        user_id: user.id,
+        symptoms: symptoms || null,
+        notes: notes || null,
+        duration_seconds: duration ? parseInt(duration) : null,
+        severity,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Episode logged",
+        description: "Your episode has been recorded successfully.",
+      });
+
+      // Reset form
+      setSymptoms("");
+      setNotes("");
+      setDuration("");
+      setSeverity("mild");
+      setOpen(false);
+      onEpisodeAdded();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to log episode",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Log Heart Episode</DialogTitle>
+          <DialogDescription>
+            Record details about your ectopic heartbeat episode
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="severity">Severity</Label>
+            <Select value={severity} onValueChange={setSeverity}>
+              <SelectTrigger id="severity">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mild">Mild</SelectItem>
+                <SelectItem value="moderate">Moderate</SelectItem>
+                <SelectItem value="severe">Severe</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="symptoms">Symptoms (optional)</Label>
+            <Textarea
+              id="symptoms"
+              placeholder="E.g., flutter in chest, skip feeling, palpitations..."
+              value={symptoms}
+              onChange={(e) => setSymptoms(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="duration">Duration in seconds (optional)</Label>
+            <Input
+              id="duration"
+              type="number"
+              placeholder="E.g., 5"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              min="1"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Additional notes (optional)</Label>
+            <Textarea
+              id="notes"
+              placeholder="Any additional context, triggers, activities..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="flex-1">
+              {loading ? "Saving..." : "Log Episode"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default LogEpisodeDialog;
