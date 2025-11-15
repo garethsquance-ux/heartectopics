@@ -12,10 +12,50 @@ serve(async (req) => {
   }
 
   try {
-    const { documentText, fileName, imageData, fileType } = await req.json();
+    const body = await req.json();
+    const { documentText, fileName, imageData, fileType } = body;
 
     if (!documentText && !imageData) {
-      throw new Error('No document text or image provided');
+      return new Response(
+        JSON.stringify({ error: 'No document text or image provided' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // INPUT VALIDATION: Validate inputs
+    if (fileName && typeof fileName !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'File name must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (fileName && fileName.length > 500) {
+      return new Response(
+        JSON.stringify({ error: 'File name too long (max 500 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (documentText && typeof documentText !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Document text must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (documentText && documentText.length > 50000) {
+      return new Response(
+        JSON.stringify({ error: 'Document too long (max 50000 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (imageData && typeof imageData !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Image data must be a base64 string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Check if document text is too long and truncate if needed
