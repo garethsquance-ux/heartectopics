@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Users, BookOpen, BookHeart, Home } from "lucide-react";
+import { Users, BookOpen, BookHeart, Home, Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const BottomNavigation = () => {
@@ -8,9 +8,9 @@ const BottomNavigation = () => {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/dashboard" },
+    { icon: Book, label: "How To", path: "/how-to" },
     { icon: Users, label: "Community", path: "/community" },
     { icon: BookHeart, label: "Stories", path: "/success-stories" },
-    { icon: BookOpen, label: "About", path: "/founder-story" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
