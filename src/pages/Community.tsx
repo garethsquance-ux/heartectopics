@@ -8,6 +8,7 @@ import { Heart, Lock, Plus, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-reac
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { CreatePostDialog } from "@/components/CreatePostDialog";
+import EditPostDialog from "@/components/EditPostDialog";
 import { SEO } from "@/components/SEO";
 import BottomNavigation from "@/components/BottomNavigation";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
@@ -30,6 +31,7 @@ interface Post {
   created_at: string;
   author_id: string;
   display_order: number | null;
+  comments_enabled: boolean;
 }
 
 const Community = () => {
@@ -42,6 +44,13 @@ const Community = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [editPostId, setEditPostId] = useState<string | null>(null);
+  const [editPostData, setEditPostData] = useState<{
+    title: string;
+    content: string;
+    category: string;
+    comments_enabled: boolean;
+  } | null>(null);
 
   useEffect(() => {
     checkAccess();
@@ -142,6 +151,23 @@ const Community = () => {
   };
 
   const handlePostCreated = async () => {
+    await fetchPosts();
+    if (isAdmin) {
+      await fetchDraftPosts();
+    }
+  };
+
+  const handleEditPost = (post: Post) => {
+    setEditPostId(post.id);
+    setEditPostData({
+      title: post.title,
+      content: post.content,
+      category: post.category,
+      comments_enabled: post.comments_enabled,
+    });
+  };
+
+  const handlePostUpdated = async () => {
     await fetchPosts();
     if (isAdmin) {
       await fetchDraftPosts();
@@ -390,7 +416,7 @@ const Community = () => {
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => navigate(`/community/${post.id}`)}
+                        onClick={() => handleEditPost(post)}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
@@ -435,6 +461,17 @@ const Community = () => {
                     </div>
                     {isAdmin && (
                       <div className="flex flex-col gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditPost(post);
+                          }}
+                          title="Edit post"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -490,6 +527,21 @@ const Community = () => {
         onOpenChange={setCreateDialogOpen}
         onPostCreated={handlePostCreated}
       />
+
+      {editPostId && editPostData && (
+        <EditPostDialog
+          open={!!editPostId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditPostId(null);
+              setEditPostData(null);
+            }
+          }}
+          onPostUpdated={handlePostUpdated}
+          postId={editPostId}
+          initialData={editPostData}
+        />
+      )}
 
       <AlertDialog open={!!deletePostId} onOpenChange={() => setDeletePostId(null)}>
         <AlertDialogContent>
