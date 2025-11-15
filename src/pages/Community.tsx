@@ -27,7 +27,7 @@ interface Post {
   id: string;
   title: string;
   content: string;
-  category: string;
+  category: "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
   created_at: string;
   author_id: string;
   display_order: number | null;
@@ -48,7 +48,7 @@ const Community = () => {
   const [editPostData, setEditPostData] = useState<{
     title: string;
     content: string;
-    category: string;
+    category: "guide" | "research" | "medical_advances" | "studies" | "personal_stories";
     comments_enabled: boolean;
   } | null>(null);
 
@@ -106,7 +106,7 @@ const Community = () => {
       return;
     }
 
-    setPosts(data || []);
+    setPosts((data || []) as Post[]);
   };
 
   const fetchDraftPosts = async () => {
@@ -121,7 +121,7 @@ const Community = () => {
       return;
     }
 
-    setDraftPosts(data || []);
+    setDraftPosts((data || []) as Post[]);
   };
 
   const handlePublishDraft = async (postId: string) => {
@@ -162,7 +162,7 @@ const Community = () => {
     setEditPostData({
       title: post.title,
       content: post.content,
-      category: post.category,
+      category: post.category as "guide" | "research" | "medical_advances" | "studies" | "personal_stories",
       comments_enabled: post.comments_enabled,
     });
   };
