@@ -24,6 +24,9 @@ export const CommunityGuidelines = () => {
             professionals for medical advice. If you experience severe symptoms, seek immediate medical attention.
           </p>
         </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Need help? Contact support at <a href="mailto:gareth@heartectopics.com" className="text-primary hover:underline">gareth@heartectopics.com</a>
+        </p>
       </AlertDescription>
     </Alert>
   );

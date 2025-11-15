@@ -136,6 +136,13 @@ const Index = () => {
             </p>
           </div>
         </div>
+
+        <footer className="mt-20 pt-8 border-t border-border/50">
+          <div className="text-center text-sm text-muted-foreground">
+            <p className="mb-2">Need help? Contact us at <a href="mailto:gareth@heartectopics.com" className="text-primary hover:underline">gareth@heartectopics.com</a></p>
+            <p>&copy; {new Date().getFullYear()} Heart Wellness Tracker. For support and tracking only - not medical advice.</p>
+          </div>
+        </footer>
       </div>
     </div>
     </>
