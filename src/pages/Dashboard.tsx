@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Plus, MessageCircle, LogOut, Activity } from "lucide-react";
+import { Heart, Plus, MessageCircle, LogOut, Activity, Users, BookOpen, Shield, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 import EpisodeList from "@/components/EpisodeList";
 import LogEpisodeDialog from "@/components/LogEpisodeDialog";
 import WellnessChatDialog from "@/components/WellnessChatDialog";
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [episodes, setEpisodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string>('free');
   const [stats, setStats] = useState({ total: 0, thisWeek: 0, thisMonth: 0 });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -25,6 +27,7 @@ const Dashboard = () => {
         navigate('/auth');
       } else if (session?.user) {
         setUser(session.user);
+        fetchUserRole(session.user.id);
       }
     });
 
@@ -41,7 +44,25 @@ const Dashboard = () => {
     }
     setUser(session.user);
     await fetchEpisodes();
+    await fetchUserRole(session.user.id);
     setLoading(false);
+  };
+
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .order('role', { ascending: true })
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+      setUserRole(data?.role || 'free');
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+    }
   };
 
   const fetchEpisodes = async () => {
@@ -103,7 +124,12 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold">Heart Wellness</h1>
-              <p className="text-muted-foreground">Track and understand your episodes</p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-muted-foreground">Track and understand your episodes</p>
+                <Badge variant={userRole === 'admin' ? 'default' : userRole === 'subscriber' ? 'secondary' : 'outline'}>
+                  {userRole === 'admin' ? '👑 Admin' : userRole === 'subscriber' ? '⭐ Subscriber' : '🆓 Free'}
+                </Badge>
+              </div>
             </div>
           </div>
           <Button variant="outline" onClick={handleSignOut} className="gap-2">
@@ -183,6 +209,53 @@ const Dashboard = () => {
               Wellness Chat
             </Button>
           </WellnessChatDialog>
+
+          <Button 
+            variant="outline" 
+            className="gap-2 h-12"
+            size="lg"
+            onClick={() => navigate('/community')}
+          >
+            <Users className="h-5 w-5" />
+            Community
+            {userRole === 'free' && (
+              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                Subscriber
+              </span>
+            )}
+          </Button>
+
+          <Button 
+            variant="outline" 
+            className="gap-2 h-12"
+            size="lg"
+            onClick={() => navigate('/founder-story')}
+          >
+            <BookOpen className="h-5 w-5" />
+            Founder's Story
+          </Button>
+
+          {userRole === 'admin' && (
+            <Button 
+              variant="outline" 
+              className="gap-2 h-12"
+              size="lg"
+              onClick={() => navigate('/admin')}
+            >
+              <Shield className="h-5 w-5" />
+              Admin
+            </Button>
+          )}
+
+          {userRole === 'free' && (
+            <Button 
+              className="gap-2 h-12"
+              size="lg"
+              onClick={() => navigate('/pricing')}
+            >
+              ⭐ Upgrade
+            </Button>
+          )}
           
           <ExportDataButton />
         </div>

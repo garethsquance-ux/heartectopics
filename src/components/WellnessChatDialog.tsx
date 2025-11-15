@@ -40,7 +40,7 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
-      const { data, error } = await supabase.functions.invoke('wellness-chat', {
+      const { data, error } = await supabase.functions.invoke('wellness-chat-enhanced', {
         body: { message: userMessage },
         headers: session?.access_token ? {
           Authorization: `Bearer ${session.access_token}`
@@ -48,8 +48,13 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
       });
 
       if (error) {
-        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
-          throw new Error('Too many requests. Please wait a moment and try again.');
+        // Handle rate limiting specifically
+        if (error.message?.includes('limit') || error.message?.includes('429')) {
+          const errorMsg = error.context?.upgradeMessage || 
+                          'You have reached your daily message limit. Upgrade to subscriber for 20 messages per day.';
+          setMessages(prev => [...prev, { role: 'assistant', content: errorMsg }]);
+          setLoading(false);
+          return;
         }
         if (error.message?.includes('402')) {
           throw new Error('Service temporarily unavailable. Please try again later.');
@@ -58,7 +63,14 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
       }
 
       if (data?.message) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+        let responseContent = data.message;
+        if (data.isCached) {
+          responseContent += '\n\n💡 This answer was from our FAQ library.';
+        }
+        if (data.remaining !== undefined) {
+          responseContent += `\n\n📊 Messages remaining today: ${data.remaining}/${data.limit}`;
+        }
+        setMessages(prev => [...prev, { role: 'assistant', content: responseContent }]);
       } else {
         throw new Error('No response from assistant');
       }
