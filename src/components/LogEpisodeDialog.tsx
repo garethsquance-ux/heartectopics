@@ -33,6 +33,7 @@ interface ExtractedData {
   severity?: "mild" | "moderate" | "severe";
   symptoms?: string;
   notes?: string;
+  encouragement?: string;
   measurements?: {
     heartRate?: number;
     other?: string;
@@ -156,9 +157,21 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
         if (data.extractedData.symptoms) {
           setSymptoms(data.extractedData.symptoms);
         }
-        if (data.extractedData.notes) {
+        if (data.extractedData.notes || data.extractedData.encouragement) {
           const existingNotes = notes ? notes + '\n\n' : '';
-          setNotes(existingNotes + data.extractedData.notes);
+          let newNotes = existingNotes;
+          
+          // Add encouragement prominently at the top if present
+          if (data.extractedData.encouragement) {
+            newNotes += `💚 POSITIVE REMINDER:\n${data.extractedData.encouragement}\n\n`;
+          }
+          
+          // Add medical notes
+          if (data.extractedData.notes) {
+            newNotes += `MEDICAL NOTES:\n${data.extractedData.notes}`;
+          }
+          
+          setNotes(newNotes);
         }
         if (data.extractedData.durationSeconds) {
           setDuration(data.extractedData.durationSeconds.toString());
@@ -169,7 +182,9 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
 
         toast({
           title: "Document analyzed",
-          description: "Information extracted successfully. Review and edit as needed.",
+          description: data.extractedData.encouragement 
+            ? "✨ Positive findings extracted! Check the notes section."
+            : "Information extracted successfully. Review and edit as needed.",
         });
       }
     } catch (error: any) {

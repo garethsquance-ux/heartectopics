@@ -118,8 +118,37 @@ const EpisodeList = ({ episodes, onUpdate, onEdit }: EpisodeListProps) => {
 
           {episode.notes && (
             <div className="mb-2">
-              <p className="text-sm font-medium text-foreground mb-1">Notes:</p>
-              <p className="text-sm text-muted-foreground">{episode.notes}</p>
+              {(() => {
+                const encouragementMatch = episode.notes.match(/💚 POSITIVE REMINDER:\n(.+?)(?:\n\n|$)/s);
+                const medicalNotesMatch = episode.notes.match(/MEDICAL NOTES:\n(.+)/s);
+                
+                return (
+                  <>
+                    {encouragementMatch && (
+                      <div className="mb-3 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-2">
+                          💚 Positive Reminder
+                        </p>
+                        <p className="text-sm text-emerald-900 dark:text-emerald-200 leading-relaxed">
+                          {encouragementMatch[1].trim()}
+                        </p>
+                      </div>
+                    )}
+                    {medicalNotesMatch && (
+                      <div>
+                        <p className="text-sm font-medium text-foreground mb-1">Medical Notes:</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{medicalNotesMatch[1].trim()}</p>
+                      </div>
+                    )}
+                    {!encouragementMatch && !medicalNotesMatch && (
+                      <div>
+                        <p className="text-sm font-medium text-foreground mb-1">Notes:</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{episode.notes}</p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 
