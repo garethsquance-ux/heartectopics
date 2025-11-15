@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Mic, MicOff, Loader2 } from "lucide-react";
 
 interface LogEpisodeDialogProps {
   children: React.ReactNode;
@@ -21,69 +20,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) =
   const [notes, setNotes] = useState("");
   const [duration, setDuration] = useState("");
   const [severity, setSeverity] = useState("mild");
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingField, setRecordingField] = useState<'notes' | 'symptoms' | null>(null);
-  const [transcribing, setTranscribing] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
-
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await transcribeAudio(audioBlob, field);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      setRecordingField(field);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      toast({
-        title: "Microphone access denied",
-        description: "Please allow microphone access to use voice input",
-        variant: "destructive",
-      });
-    }
-  };
-
-
-  const transcribeAudio = async (audioBlob: Blob, field: 'notes' | 'symptoms') => {
-    setTranscribing(true);
-    try {
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      reader.onloadend = async () => {
-        const base64Audio = reader.result?.toString().split(',')[1];
-        
-        const { data, error } = await supabase.functions.invoke('transcribe-audio', {
-          body: { audio: base64Audio },
-        });
-
-        if (error) throw error;
-
-        if (field === 'notes') {
-          setNotes(prev => prev ? `${prev} ${data.text}` : data.text);
-        } else {
-          setSymptoms(prev => prev ? `${prev} ${data.text}` : data.text);
-        }
-
-        toast({
-          title: "Voice recorded",
-          description: "Your voice note has been transcribed",
-        });
-      };
-    } catch (error: any) {
-      toast({
-        title: "Transcription failed",
-        description: error.message || "Failed to transcribe audio",
-        variant: "destructive",
-      });
-    } finally {
-      setTranscribing(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +58,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) =
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to log episode",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -134,109 +71,73 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) =
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Log Heart Episode</DialogTitle>
           <DialogDescription>
-            Record details about your ectopic heartbeat episode
+            Record the details of your ectopic heartbeat episode
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="severity">Severity</Label>
-            <Select value={severity} onValueChange={setSeverity}>
-              <SelectTrigger id="severity">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mild">Mild</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="severe">Severe</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="symptoms">Symptoms (optional)</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => isRecording && recordingField === 'symptoms' ? stopRecording() : startRecording('symptoms')}
-                disabled={transcribing || (isRecording && recordingField !== 'symptoms')}
-                className="h-8 w-8 p-0"
-              >
-                {transcribing && recordingField === 'symptoms' ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : isRecording && recordingField === 'symptoms' ? (
-                  <MicOff className="h-4 w-4 text-destructive" />
-                ) : (
-                  <Mic className="h-4 w-4" />
-                )}
-              </Button>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="severity">Severity</Label>
+              <Select value={severity} onValueChange={setSeverity}>
+                <SelectTrigger id="severity">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mild">Mild</SelectItem>
+                  <SelectItem value="moderate">Moderate</SelectItem>
+                  <SelectItem value="severe">Severe</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Textarea
-              id="symptoms"
-              placeholder="E.g., flutter in chest, skip feeling, palpitations..."
-              value={symptoms}
-              onChange={(e) => setSymptoms(e.target.value)}
-              rows={3}
-            />
-            {isRecording && recordingField === 'symptoms' && (
-              <p className="text-xs text-muted-foreground">Recording... Tap the mic to stop</p>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="duration">Duration in seconds (optional)</Label>
-            <Input
-              id="duration"
-              type="number"
-              placeholder="E.g., 5"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              min="1"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="notes">Additional notes (optional)</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => isRecording && recordingField === 'notes' ? stopRecording() : startRecording('notes')}
-                disabled={transcribing || (isRecording && recordingField !== 'notes')}
-                className="h-8 w-8 p-0"
-              >
-                {transcribing && recordingField === 'notes' ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : isRecording && recordingField === 'notes' ? (
-                  <MicOff className="h-4 w-4 text-destructive" />
-                ) : (
-                  <Mic className="h-4 w-4" />
-                )}
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="symptoms">Symptoms</Label>
+              <Textarea
+                id="symptoms"
+                value={symptoms}
+                onChange={(e) => setSymptoms(e.target.value)}
+                placeholder="Describe what you felt during this episode"
+                className="min-h-[80px]"
+              />
             </div>
-            <Textarea
-              id="notes"
-              placeholder="Any additional context, triggers, activities..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-            />
-            {isRecording && recordingField === 'notes' && (
-              <p className="text-xs text-muted-foreground">Recording... Tap the mic to stop</p>
-            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration (seconds)</Label>
+              <Input
+                id="duration"
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="How long did it last?"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Additional Notes (Optional)</Label>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Any other details you'd like to record"
+                className="min-h-[80px]"
+              />
+            </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
+            <Button type="submit" disabled={loading}>
               {loading ? "Saving..." : "Log Episode"}
             </Button>
           </div>
