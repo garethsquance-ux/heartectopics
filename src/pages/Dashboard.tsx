@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Plus, LogOut, Activity, Shield, TrendingUp, FileText } from "lucide-react";
+import { Heart, Plus, LogOut, Activity, Shield, TrendingUp, FileText, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import EpisodeList from "@/components/EpisodeList";
 import LogEpisodeDialog from "@/components/LogEpisodeDialog";
+import WellnessChatDialog from "@/components/WellnessChatDialog";
 import ExportDataButton from "@/components/ExportDataButton";
 import ComposeDoctorLetterDialog from "@/components/ComposeDoctorLetterDialog";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
@@ -292,6 +293,13 @@ const Dashboard = () => {
               Log Episode
             </Button>
           </LogEpisodeDialog>
+
+          <WellnessChatDialog>
+            <Button variant="outline" className="gap-2 h-14 text-base w-full" size="lg">
+              <MessageCircle className="h-5 w-5" />
+              💙 Heart Buddy
+            </Button>
+          </WellnessChatDialog>
 
           <ComposeDoctorLetterDialog userRole={userRole}>
             <Button variant="outline" className="gap-2 h-14 text-base w-full" size="lg">
