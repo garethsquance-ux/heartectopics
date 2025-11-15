@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Plus, LogOut, Activity, Shield, TrendingUp, FileText, MessageCircle } from "lucide-react";
+import { Heart, Plus, LogOut, Activity, Shield, TrendingUp, FileText, MessageCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import EpisodeList from "@/components/EpisodeList";
@@ -223,8 +223,8 @@ const Dashboard = () => {
               <h1 className="text-3xl font-bold">Heart Wellness</h1>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-muted-foreground">Track and understand your episodes</p>
-                <Badge variant={userRole === 'admin' ? 'default' : userRole === 'subscriber' ? 'secondary' : 'outline'}>
-                  {userRole === 'admin' ? '👑 Admin' : userRole === 'subscriber' ? '⭐ Subscriber' : '🆓 Free'}
+                <Badge variant={userRole === 'admin' ? 'default' : userRole === 'subscriber' || userRole === 'premium' ? 'secondary' : 'outline'}>
+                  {userRole === 'admin' ? '👑 Admin' : userRole === 'premium' ? '💎 Premium' : userRole === 'subscriber' ? '⭐ Subscriber' : '🆓 Free'}
                 </Badge>
               </div>
             </div>
@@ -300,6 +300,37 @@ const Dashboard = () => {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+          {/* Emergency Mode Button - Premium Feature */}
+          {(userRole === 'premium' || userRole === 'admin') ? (
+            <Button 
+              className="gap-2 h-14 text-base w-full bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 text-white border-2 border-destructive/20 shadow-lg animate-pulse"
+              size="lg"
+              onClick={() => navigate('/episode-mode')}
+            >
+              <AlertCircle className="h-5 w-5" />
+              🚨 Having Episode Now
+            </Button>
+          ) : (
+            <Button 
+              className="gap-2 h-14 text-base w-full"
+              size="lg"
+              variant="outline"
+              onClick={() => {
+                toast({
+                  title: "Premium Feature",
+                  description: "During Episode mode is available for Premium subscribers. Upgrade to get instant calming support during episodes.",
+                });
+                navigate('/pricing');
+              }}
+            >
+              <AlertCircle className="h-5 w-5" />
+              🚨 During Episode Mode
+              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                Premium
+              </span>
+            </Button>
+          )}
+
           <LogEpisodeDialog onEpisodeAdded={fetchEpisodes}>
             <Button className="gap-2 h-14 text-base w-full" size="lg">
               <Plus className="h-5 w-5" />
