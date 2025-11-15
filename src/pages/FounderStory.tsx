@@ -27,41 +27,62 @@ const FounderStory = () => {
 
           <div className="bg-card p-8 rounded-lg shadow-lg space-y-6">
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">The Journey Begins</h2>
+              <h2 className="text-2xl font-semibold">When It All Began</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Like many of you, I experienced my first ectopic heartbeat unexpectedly. That sudden flutter, the pause, 
-                the feeling that something was fundamentally wrong with my heart. It was terrifying. I rushed to the doctor, 
-                convinced something serious was happening.
+                I can remember my first ectopic heartbeat as a child. That curious sensation—a flutter, a pause, then a strong beat. 
+                Back then, I thought it was fascinating. "That was a really strong beat," I'd think to myself. There was no fear, 
+                just innocent curiosity about what my heart was doing.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                After tests and consultations, I was told what many of you have heard: "They're harmless. Try not to worry about them." 
-                But anyone who experiences ectopics knows that's easier said than done. The anxiety, the hyper-awareness of every 
-                heartbeat, the fear that this time might be different—it consumed me.
-              </p>
-            </section>
-
-            <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">The Isolation</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                What surprised me most wasn't the ectopic heartbeats themselves, but how isolated I felt. Friends and family, 
-                while sympathetic, couldn't truly understand what it felt like. Online forums were filled with anxiety and worst-case 
-                scenarios. I needed something different—a way to track my episodes, understand my patterns, and connect with 
-                others who truly understood.
+                But as I grew older, something changed. I learned fear. That innocent curiosity transformed into anxiety, then dread. 
+                What I once found interesting became terrifying. These are PVCs—premature ventricular contractions—and they've been 
+                my constant companion for as long as I can remember.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">Building This Community</h2>
+              <h2 className="text-2xl font-semibold">The Spiral of Fear and PTSD</h2>
               <p className="text-muted-foreground leading-relaxed">
-                This app was born from that need. I wanted to create a space where people could:
+                I've rushed myself to the emergency room on so many occasions. I've undergone multiple EP studies, countless tests, 
+                doctor visits that all ended with the same message: "They're benign. Try not to worry." But anyone living with this 
+                knows—you can't just "not worry."
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                The psychological struggle became overwhelming. I also suffer from PTSD, which compounded everything. The ectopics 
+                would trigger panic. The panic would trigger more ectopics. It became a vicious cycle that drained so much time and 
+                life out of me. I felt isolated, alone, like no one truly understood what I was going through.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold">Discovering What Actually Helps</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Through my journey, I've discovered something profound: the connection between the gut and the heart is astronomical. 
+                By working on my gut health, I've managed to reduce my ectopics significantly. It wasn't what the doctors told me 
+                about, but it made a real difference.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Sleep matters—really matters. I'm constantly researching treatments, new studies, AI developments, anything that might 
+                help. I look at all the angles because I know how hard this is psychologically, how isolated and alone people can feel.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold">Why I Built This Platform</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                I created this platform because I needed it to exist. I wanted a place where people could:
               </p>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
-                <li>Track their episodes and identify personal triggers</li>
-                <li>Access AI-powered support for immediate reassurance (not medical advice, but understanding)</li>
-                <li>Connect with others in a safe, moderated community</li>
-                <li>Stay informed about the latest research and medical advances</li>
-                <li>Feel less alone in their experience</li>
+                <li>Track their episodes and discover their personal patterns and triggers</li>
+                <li>Get immediate AI-powered support and reassurance during scary moments</li>
+                <li>Connect with others who truly understand this struggle</li>
+                <li>Access the latest research on treatments, including the gut-heart connection</li>
+                <li>Know they're not alone in this experience</li>
               </ul>
+              <p className="text-muted-foreground leading-relaxed mt-4">
+                This isn't just an app—it's the support system I wish I'd had all those years ago when I was rushing to the ER, 
+                convinced something was seriously wrong, feeling utterly alone.
+              </p>
             </section>
 
             <section className="space-y-4">
