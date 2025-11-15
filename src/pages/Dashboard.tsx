@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Plus, MessageCircle, LogOut, Activity, Users, BookOpen, Shield, TrendingUp, FileText } from "lucide-react";
+import { Heart, Plus, MessageCircle, LogOut, Activity, Users, BookOpen, Shield, TrendingUp, FileText, BookHeart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import EpisodeList from "@/components/EpisodeList";
@@ -312,6 +312,16 @@ const Dashboard = () => {
           >
             <BookOpen className="h-5 w-5" />
             Founder's Story
+          </Button>
+
+          <Button 
+            variant="outline" 
+            className="gap-2 h-12"
+            size="lg"
+            onClick={() => navigate('/success-stories')}
+          >
+            <BookHeart className="h-5 w-5" />
+            Success Stories
           </Button>
 
           {userRole === 'admin' && (

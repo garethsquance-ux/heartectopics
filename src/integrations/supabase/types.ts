@@ -219,6 +219,42 @@ export type Database = {
         }
         Relationships: []
       }
+      success_stories: {
+        Row: {
+          created_at: string
+          id: string
+          moderation_notes: string | null
+          moderation_status: string
+          reviewed_at: string | null
+          story: string
+          submitted_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          moderation_notes?: string | null
+          moderation_status?: string
+          reviewed_at?: string | null
+          story: string
+          submitted_at?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          moderation_notes?: string | null
+          moderation_status?: string
+          reviewed_at?: string | null
+          story?: string
+          submitted_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_chat_usage: {
         Row: {
           created_at: string
