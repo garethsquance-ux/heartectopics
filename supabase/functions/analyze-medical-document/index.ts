@@ -36,6 +36,7 @@ Extract the following information if present:
 - Doctor's observations
 - Treatment recommendations
 - Any test results
+- IMPORTANT: Any positive findings or reassurances (e.g., "structurally normal heart", "no concerning abnormalities", "benign condition")
 
 Return a JSON object with these fields (use null if not found):
 {
@@ -47,10 +48,11 @@ Return a JSON object with these fields (use null if not found):
   "measurements": {
     "heartRate": number or null,
     "other": "any other measurements found"
-  }
+  },
+  "encouragement": "A warm, personal 2-3 sentence reminder based on positive findings. If doctor mentioned 'structurally fine', 'no abnormalities', 'benign', or similar reassurances, craft an encouraging message the patient can return to during difficult moments. Focus on what IS working well. If no positive findings, leave null."
 }
 
-Be conservative - only extract information you're confident about. If you're unsure, leave it null.`;
+Be conservative with medical facts but generous with encouragement when positive findings exist.`;
 
     // Build the user message based on whether we have text or image
     let userMessage;
