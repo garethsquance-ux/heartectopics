@@ -171,6 +171,7 @@ const Admin = () => {
                 Moderation {stats.flaggedComments > 0 && `(${stats.flaggedComments})`}
               </TabsTrigger>
               <TabsTrigger value="usage">Usage Stats</TabsTrigger>
+              <TabsTrigger value="roles">Roles</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
@@ -241,6 +242,72 @@ const Admin = () => {
                     </p>
                   </div>
                 </div>
+              </Card>
+            </TabsContent>
+            <TabsContent value="roles" className="space-y-4">
+              <Card className="p-6 space-y-4">
+                <h2 className="text-2xl font-semibold">Role Management</h2>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">User Email</Label>
+                    <Input id="email" placeholder="user@example.com" value={targetEmail} onChange={(e) => setTargetEmail(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Action</Label>
+                    <Select value={roleAction} onValueChange={(v) => setRoleAction(v as 'add' | 'remove')}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select action" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="add">Add</SelectItem>
+                        <SelectItem value="remove">Remove</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select value={roleName} onValueChange={(v) => setRoleName(v as 'subscriber' | 'admin')}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="subscriber">subscriber</SelectItem>
+                        <SelectItem value="admin">admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={async () => {
+                      try {
+                        setUpdatingRole(true);
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session) throw new Error('Not authenticated');
+                        const { data, error } = await supabase.functions.invoke('manage-roles', {
+                          headers: { Authorization: `Bearer ${session.access_token}` },
+                          body: { action: roleAction, role: roleName, user_email: targetEmail }
+                        });
+                        if (error) throw error;
+                        if (data?.ok) {
+                          toast({ title: 'Success', description: data.message || 'Role updated' });
+                        } else {
+                          throw new Error(data?.error || 'Unknown error');
+                        }
+                      } catch (err: any) {
+                        toast({ title: 'Error', description: err.message || 'Failed to update role', variant: 'destructive' });
+                      } finally {
+                        setUpdatingRole(false);
+                      }
+                    }}
+                    disabled={updatingRole || !targetEmail}
+                  >
+                    {updatingRole ? 'Updating...' : 'Apply'}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Tip: Add "subscriber" to grant community access. Use "admin" for full control.
+                </p>
               </Card>
             </TabsContent>
           </Tabs>

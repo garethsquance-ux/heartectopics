@@ -32,3 +32,9 @@ verify_jwt = true
 
 [functions.transcribe-audio]
 verify_jwt = true
+
+[functions.bootstrap-admin]
+verify_jwt = true
+
+[functions.manage-roles]
+verify_jwt = true
