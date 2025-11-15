@@ -12,6 +12,19 @@ import BottomNavigation from "@/components/BottomNavigation";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 import { SEO } from "@/components/SEO";
 
+import { z } from "zod";
+
+const storySchema = z.object({
+  title: z.string()
+    .trim()
+    .min(5, { message: "Title must be at least 5 characters" })
+    .max(100, { message: "Title must be less than 100 characters" }),
+  story: z.string()
+    .trim()
+    .min(50, { message: "Story must be at least 50 characters" })
+    .max(5000, { message: "Story must be less than 5000 characters" })
+});
+
 interface Story {
   id: string;
   title: string;
@@ -56,6 +69,19 @@ const SuccessStories = () => {
     setSubmitting(true);
 
     try {
+      // Validate input
+      const validation = storySchema.safeParse({ title, story: storyText });
+      if (!validation.success) {
+        const firstError = validation.error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -73,7 +99,7 @@ const SuccessStories = () => {
         "moderate-content",
         {
           body: {
-            content: `${title}\n\n${storyText}`,
+            content: `${validation.data.title}\n\n${validation.data.story}`,
             type: "story",
           },
         }
@@ -90,21 +116,21 @@ const SuccessStories = () => {
         return;
       }
 
-      // Submit story
+      // Submit story with validated data
       const { error } = await supabase
         .from("success_stories")
         .insert({
           user_id: user.id,
-          title,
-          story: storyText,
+          title: validation.data.title,
+          story: validation.data.story,
           moderation_status: "pending",
         });
 
       if (error) throw error;
 
       toast({
-        title: "Story submitted!",
-        description: "Your story is being reviewed and will be published soon.",
+        title: "Story submitted successfully! ✓",
+        description: "Your story will be reviewed by our team. You'll see it published here once approved.",
       });
 
       setTitle("");
@@ -177,31 +203,43 @@ const SuccessStories = () => {
             <CardHeader>
               <CardTitle>Share Your Story</CardTitle>
               <CardDescription>
-                Your story will be reviewed before publication
+                Tell us how you've learned to manage your ectopic heartbeats. All stories are reviewed by our team before publication to ensure they meet community guidelines.
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>📋 Review Process:</strong> Your story will be submitted for admin approval. Only approved stories are published to protect our community. You'll be notified once your story goes live.
+                </p>
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
+                  <Label htmlFor="title">Title (5-100 characters)</Label>
                   <Input
                     id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Give your story a title..."
+                    minLength={5}
+                    maxLength={100}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="story">Your Story</Label>
+                  <Label htmlFor="story">Your Story (50-5000 characters)</Label>
                   <Textarea
                     id="story"
                     value={storyText}
                     onChange={(e) => setStoryText(e.target.value)}
-                    placeholder="Share your experience, challenges, and victories..."
+                    placeholder="Share your experience, challenges, and victories in managing ectopic heartbeats..."
                     className="min-h-[200px]"
+                    minLength={50}
+                    maxLength={5000}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {storyText.length}/5000 characters
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button type="submit" disabled={submitting}>
