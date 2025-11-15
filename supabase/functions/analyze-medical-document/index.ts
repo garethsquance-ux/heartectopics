@@ -18,6 +18,18 @@ serve(async (req) => {
       throw new Error('No document text or image provided');
     }
 
+    // Check if document text is too long and truncate if needed
+    const MAX_CHARS = 15000; // ~3750 tokens, leaving room for response
+    let processedText = documentText;
+    
+    if (documentText && documentText.length > MAX_CHARS) {
+      console.log(`Document too long (${documentText.length} chars), truncating to ${MAX_CHARS}`);
+      // Take first 80% and last 20% to preserve context
+      const firstPart = documentText.substring(0, Math.floor(MAX_CHARS * 0.8));
+      const lastPart = documentText.substring(documentText.length - Math.floor(MAX_CHARS * 0.2));
+      processedText = `${firstPart}\n\n[... middle section omitted due to length ...]\n\n${lastPart}`;
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -66,10 +78,10 @@ Be conservative with medical facts but generous with encouragement when positive
         ]
       };
     } else {
-      // For text documents
+      // For text documents (use processed/truncated text)
       userMessage = {
         role: 'user',
-        content: `Analyze this medical document:\n\n${documentText}`
+        content: `Analyze this medical document:\n\n${processedText}`
       };
     }
 
