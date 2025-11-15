@@ -122,13 +122,10 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
         // For images, convert to base64 for vision analysis
         imageData = await fileToBase64(file);
       } else if (file.type === 'application/pdf') {
-        // For PDFs, read as text (basic support)
-        documentText = await file.text();
-        if (!documentText.trim()) {
-          setUploadError("PDF text extraction failed. Please convert to text format or use images instead.");
-          setAnalyzing(false);
-          return;
-        }
+        // For PDFs, show error that proper extraction is not available yet
+        setUploadError("PDF analysis requires proper text extraction. Please copy the text content from your PDF and save it as a .txt file, or take a photo/screenshot of the document instead.");
+        setAnalyzing(false);
+        return;
       } else {
         documentText = await file.text();
       }
@@ -310,7 +307,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             <div className="space-y-2">
               <Label htmlFor="document">Upload Medical Document (Optional)</Label>
               <p className="text-xs text-muted-foreground">
-                Supports text files, Word docs, images (JPG/PNG with AI vision), and PDFs. AI extracts episode details automatically.
+                Best: Text files (.txt) or images (JPG/PNG with AI vision). Word docs also supported. AI extracts episode details automatically.
               </p>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -373,7 +370,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Supported formats: .txt, .docx, .jpg, .png, .pdf (max 20MB). Images use AI vision for OCR.
+                For PDFs: Copy text content and save as .txt, or take a photo instead. Images use AI vision for automatic text extraction.
               </p>
             </div>
 
