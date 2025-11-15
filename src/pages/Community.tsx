@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Lock } from "lucide-react";
+import { Heart, Lock, Plus, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { CreatePostDialog } from "@/components/CreatePostDialog";
 
 interface Post {
   id: string;
@@ -21,8 +22,11 @@ const Community = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [draftPosts, setDraftPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     checkAccess();
@@ -43,10 +47,15 @@ const Community = () => {
         .eq('user_id', session.user.id);
 
       const userHasAccess = roles?.some(r => r.role === 'subscriber' || r.role === 'admin') || false;
+      const userIsAdmin = roles?.some(r => r.role === 'admin') || false;
       setHasAccess(userHasAccess);
+      setIsAdmin(userIsAdmin);
 
       if (userHasAccess) {
         await fetchPosts();
+        if (userIsAdmin) {
+          await fetchDraftPosts();
+        }
       }
     } catch (error) {
       console.error('Error checking access:', error);
@@ -73,6 +82,54 @@ const Community = () => {
     }
 
     setPosts(data || []);
+  };
+
+  const fetchDraftPosts = async () => {
+    const { data, error } = await supabase
+      .from('community_posts')
+      .select('*')
+      .eq('is_published', false)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching drafts:', error);
+      return;
+    }
+
+    setDraftPosts(data || []);
+  };
+
+  const handlePublishDraft = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('community_posts')
+        .update({ is_published: true })
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Post published successfully",
+      });
+
+      await fetchPosts();
+      await fetchDraftPosts();
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to publish post",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePostCreated = async () => {
+    await fetchPosts();
+    if (isAdmin) {
+      await fetchDraftPosts();
+    }
   };
 
   const getCategoryColor = (category: string) => {
@@ -166,8 +223,61 @@ const Community = () => {
                 Latest updates, research, and stories from our community
               </p>
             </div>
-            <Heart className="w-12 h-12 text-primary animate-pulse" />
+            <div className="flex items-center gap-4">
+              {isAdmin && (
+                <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Create Post
+                </Button>
+              )}
+              <Heart className="w-12 h-12 text-primary animate-pulse" />
+            </div>
           </div>
+
+          {isAdmin && draftPosts.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-2xl font-semibold">Draft Posts</h2>
+              <div className="space-y-3">
+                {draftPosts.map((post) => (
+                  <Card 
+                    key={post.id} 
+                    className="p-6 space-y-3 border-dashed"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">Draft</Badge>
+                          <Badge className={getCategoryColor(post.category)}>
+                            {formatCategory(post.category)}
+                          </Badge>
+                        </div>
+                        <h2 className="text-2xl font-semibold">{post.title}</h2>
+                        <p className="text-muted-foreground line-clamp-2">
+                          {post.content.substring(0, 200)}...
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handlePublishDraft(post.id)}
+                        size="sm"
+                      >
+                        Publish Now
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => navigate(`/community/${post.id}`)}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
 
           {posts.length === 0 ? (
             <Card className="p-12 text-center">
@@ -208,6 +318,12 @@ const Community = () => {
           )}
         </div>
       </div>
+
+      <CreatePostDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onPostCreated={handlePostCreated}
+      />
     </div>
   );
 };
