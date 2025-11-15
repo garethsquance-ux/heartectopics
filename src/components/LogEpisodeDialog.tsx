@@ -51,7 +51,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
   const [notes, setNotes] = useState("");
   const [duration, setDuration] = useState("");
   const [severity, setSeverity] = useState("mild");
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -70,23 +70,16 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       setNotes("");
       setDuration("");
       setSeverity("mild");
-      setUploadedFile(null);
+      setUploadedFiles([]);
       setExtractedData(null);
       setUploadError(null);
     }
   }, [editEpisode, dialogOpen]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    // Check file size (20MB limit)
-    if (file.size > 20 * 1024 * 1024) {
-      setUploadError("File size must be less than 20MB");
-      return;
-    }
-
-    // Check file type
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
@@ -97,17 +90,111 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       'text/plain'
     ];
     
-    if (!allowedTypes.includes(file.type)) {
-      setUploadError("Please upload a PDF, image (JPG/PNG), Word document, or text file");
+    // Validate all files
+    const validFiles: File[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Check file size (20MB limit per file)
+      if (file.size > 20 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: `${file.name} exceeds 20MB limit`,
+          variant: "destructive",
+        });
+        continue;
+      }
+
+      // Check file type
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: `${file.name} is not a supported format`,
+          variant: "destructive",
+        });
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      setUploadError("No valid files selected");
       return;
     }
 
-    setUploadedFile(file);
+    setUploadedFiles(validFiles);
     setUploadError(null);
-    await analyzeDocument(file);
+    await analyzeMultipleDocuments(validFiles);
   };
 
-  const analyzeDocument = async (file: File) => {
+  const analyzeMultipleDocuments = async (files: File[]) => {
+    setAnalyzing(true);
+    const allEncouragements: string[] = [];
+    const allNotes: string[] = [];
+    const allSymptoms: string[] = [];
+    let combinedDuration = 0;
+    let highestSeverity: "mild" | "moderate" | "severe" = "mild";
+
+    try {
+      for (const file of files) {
+        const result = await analyzeDocument(file);
+        if (result) {
+          if (result.encouragement) allEncouragements.push(result.encouragement);
+          if (result.notes) allNotes.push(result.notes);
+          if (result.symptoms) allSymptoms.push(result.symptoms);
+          if (result.durationSeconds) combinedDuration += result.durationSeconds;
+          if (result.severity) {
+            const severities = { mild: 1, moderate: 2, severe: 3 };
+            if (severities[result.severity] > severities[highestSeverity]) {
+              highestSeverity = result.severity;
+            }
+          }
+        }
+      }
+
+      // Combine all extracted data
+      if (allSymptoms.length > 0) {
+        setSymptoms([...new Set(allSymptoms)].join(', '));
+      }
+
+      if (allEncouragements.length > 0 || allNotes.length > 0) {
+        let combinedNotes = '';
+        
+        if (allEncouragements.length > 0) {
+          combinedNotes += `💚 POSITIVE REMINDERS:\n${allEncouragements.join('\n\n')}\n\n`;
+        }
+        
+        if (allNotes.length > 0) {
+          combinedNotes += `MEDICAL NOTES:\n${allNotes.join('\n\n')}`;
+        }
+        
+        setNotes(combinedNotes);
+      }
+
+      if (combinedDuration > 0) {
+        setDuration(combinedDuration.toString());
+      }
+
+      setSeverity(highestSeverity);
+
+      toast({
+        title: "All documents analyzed",
+        description: `Successfully processed ${files.length} file(s). ${allEncouragements.length > 0 ? '✨ Positive findings extracted!' : ''}`,
+      });
+    } catch (error: any) {
+      console.error('Error analyzing documents:', error);
+      toast({
+        title: "Analysis failed",
+        description: "Some documents could not be analyzed. You can still enter information manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const analyzeDocument = async (file: File): Promise<ExtractedData | null> => {
     setAnalyzing(true);
     try {
       let documentText = '';
@@ -132,8 +219,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
 
       if (!documentText.trim() && !imageData) {
         setUploadError("Document appears to be empty or unreadable");
-        setAnalyzing(false);
-        return;
+        return null;
       }
 
       const { data, error } = await supabase.functions.invoke('analyze-medical-document', {
@@ -148,51 +234,13 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       if (error) throw error;
 
       if (data.success && data.extractedData) {
-        setExtractedData(data.extractedData);
-        
-        // Auto-populate fields if data was extracted
-        if (data.extractedData.symptoms) {
-          setSymptoms(data.extractedData.symptoms);
-        }
-        if (data.extractedData.notes || data.extractedData.encouragement) {
-          const existingNotes = notes ? notes + '\n\n' : '';
-          let newNotes = existingNotes;
-          
-          // Add encouragement prominently at the top if present
-          if (data.extractedData.encouragement) {
-            newNotes += `💚 POSITIVE REMINDER:\n${data.extractedData.encouragement}\n\n`;
-          }
-          
-          // Add medical notes
-          if (data.extractedData.notes) {
-            newNotes += `MEDICAL NOTES:\n${data.extractedData.notes}`;
-          }
-          
-          setNotes(newNotes);
-        }
-        if (data.extractedData.durationSeconds) {
-          setDuration(data.extractedData.durationSeconds.toString());
-        }
-        if (data.extractedData.severity) {
-          setSeverity(data.extractedData.severity);
-        }
-
-        toast({
-          title: "Document analyzed",
-          description: data.extractedData.encouragement 
-            ? "✨ Positive findings extracted! Check the notes section."
-            : "Information extracted successfully. Review and edit as needed.",
-        });
+        return data.extractedData;
       }
+      
+      return null;
     } catch (error: any) {
       console.error('Error analyzing document:', error);
-      toast({
-        title: "Analysis failed",
-        description: error.message || "Could not analyze the document. You can still enter information manually.",
-        variant: "destructive",
-      });
-    } finally {
-      setAnalyzing(false);
+      return null;
     }
   };
 
@@ -231,35 +279,37 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
 
       if (episodeError) throw episodeError;
 
-      // If a document was uploaded, save it to storage and link to episode
-      if (uploadedFile && episode) {
-        const fileExt = uploadedFile.name.split('.').pop();
-        const fileName = `${user.id}/${episode.id}/${Date.now()}.${fileExt}`;
+      // If documents were uploaded, save them to storage and link to episode
+      if (uploadedFiles.length > 0 && episode) {
+        for (const file of uploadedFiles) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user.id}/${episode.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('medical-documents')
-          .upload(fileName, uploadedFile);
+          const { error: uploadError } = await supabase.storage
+            .from('medical-documents')
+            .upload(fileName, file);
 
-        if (uploadError) {
-          console.error('Error uploading document:', uploadError);
-        } else {
-          // Save document reference
-          await supabase.from('episode_documents').insert([{
-            episode_id: episode.id,
-            user_id: user.id,
-            file_name: uploadedFile.name,
-            file_path: fileName,
-            file_type: uploadedFile.type,
-            file_size: uploadedFile.size,
-            extracted_data: extractedData as any,
-          }]);
+          if (uploadError) {
+            console.error('Error uploading document:', uploadError);
+          } else {
+            // Save document reference
+            await supabase.from('episode_documents').insert([{
+              episode_id: episode.id,
+              user_id: user.id,
+              file_name: file.name,
+              file_path: fileName,
+              file_type: file.type,
+              file_size: file.size,
+              extracted_data: extractedData as any,
+            }]);
+          }
         }
       }
 
       toast({
         title: "Episode logged",
-        description: uploadedFile 
-          ? "Your episode and document have been saved successfully."
+        description: uploadedFiles.length > 0
+          ? `Your episode and ${uploadedFiles.length} document(s) have been saved successfully.`
           : "Your episode has been recorded successfully.",
       });
 
@@ -268,7 +318,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       setNotes("");
       setDuration("");
       setSeverity("mild");
-      setUploadedFile(null);
+      setUploadedFiles([]);
       setExtractedData(null);
       setUploadError(null);
       setDialogOpen(false);
@@ -314,22 +364,23 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
                   <Input
                     id="document"
                     type="file"
+                    multiple
                     onChange={handleFileSelect}
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt"
                     className="flex-1"
                     disabled={analyzing || loading}
                   />
-                  {uploadedFile && !analyzing && (
+                  {uploadedFiles.length > 0 && !analyzing && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        setUploadedFile(null);
+                        setUploadedFiles([]);
                         setExtractedData(null);
                       }}
                     >
-                      Remove
+                      Remove All
                     </Button>
                   )}
                 </div>
@@ -350,27 +401,31 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
                   </Alert>
                 )}
 
-                {uploadedFile && !analyzing && extractedData && (
+                {uploadedFiles.length > 0 && !analyzing && extractedData && (
                   <Alert>
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                     <AlertDescription>
-                      Document analyzed! Fields have been populated. Review and edit as needed.
+                      Documents analyzed! Fields have been populated. Review and edit as needed.
                     </AlertDescription>
                   </Alert>
                 )}
 
-                {uploadedFile && !analyzing && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <FileText className="h-4 w-4" />
-                    <span>{uploadedFile.name}</span>
-                    <span className="text-xs">
-                      ({(uploadedFile.size / 1024).toFixed(1)} KB)
-                    </span>
+                {uploadedFiles.length > 0 && !analyzing && (
+                  <div className="space-y-2">
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <FileText className="h-4 w-4" />
+                        <span>{file.name}</span>
+                        <span className="text-xs">
+                          ({(file.size / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                For PDFs: Copy text content and save as .txt, or take a photo instead. Images use AI vision for automatic text extraction.
+                Upload multiple files at once. For PDFs: Copy text content and save as .txt, or take a photo instead. Images use AI vision for automatic text extraction.
               </p>
             </div>
 
@@ -433,7 +488,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
                 setNotes("");
                 setDuration("");
                 setSeverity("mild");
-                setUploadedFile(null);
+                setUploadedFiles([]);
                 setExtractedData(null);
                 setUploadError(null);
               }}
