@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Plus, MessageCircle, LogOut, Activity, Users, BookOpen, Shield, TrendingUp } from "lucide-react";
+import { Heart, Plus, MessageCircle, LogOut, Activity, Users, BookOpen, Shield, TrendingUp, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import EpisodeList from "@/components/EpisodeList";
 import LogEpisodeDialog from "@/components/LogEpisodeDialog";
 import WellnessChatDialog from "@/components/WellnessChatDialog";
 import ExportDataButton from "@/components/ExportDataButton";
+import ComposeDoctorLetterDialog from "@/components/ComposeDoctorLetterDialog";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -276,7 +277,19 @@ const Dashboard = () => {
             </Button>
           </WellnessChatDialog>
 
-          <Button 
+          <ComposeDoctorLetterDialog userRole={userRole}>
+            <Button variant="outline" className="gap-2 h-12" size="lg">
+              <FileText className="h-5 w-5" />
+              Doctor Letter
+              {!['subscriber', 'admin'].includes(userRole) && (
+                <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                  Basic
+                </span>
+              )}
+            </Button>
+          </ComposeDoctorLetterDialog>
+
+          <Button
             variant="outline" 
             className="gap-2 h-12"
             size="lg"

@@ -141,6 +141,10 @@ const Pricing = () => {
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <span>Basic doctor letter template</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <span>Export your data to CSV</span>
               </li>
               <li className="flex items-start gap-2">
@@ -190,6 +194,10 @@ const Pricing = () => {
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <span>20 AI chat messages per day</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <span><strong>AI-powered doctor letters</strong> with episode analysis</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
