@@ -215,6 +215,7 @@ const Community = () => {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
+      guide: "bg-primary/10 text-primary",
       research: "bg-blue-500/10 text-blue-500",
       medical_advances: "bg-green-500/10 text-green-500",
       studies: "bg-purple-500/10 text-purple-500",

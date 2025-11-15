@@ -294,10 +294,13 @@ const CommunityPost = () => {
               prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:pb-3 prose-h1:border-b-2 prose-h1:border-primary/20
               prose-h2:text-3xl prose-h2:mb-4 prose-h2:mt-8 prose-h2:text-primary prose-h2:font-black
               prose-h3:text-2xl prose-h3:mb-3 prose-h3:mt-6 prose-h3:text-primary/90 prose-h3:font-bold
-              prose-p:text-base prose-p:leading-7 prose-p:mb-4 prose-p:text-foreground/90
+              prose-p:text-base prose-p:leading-7 prose-p:mb-6 prose-p:text-foreground/90
               prose-strong:text-primary prose-strong:font-semibold
               prose-ul:my-4 prose-ul:space-y-2
               prose-li:text-foreground/90 prose-li:leading-relaxed
+              prose-ol:my-6 prose-ol:space-y-6 prose-ol:counter-reset-[item]
+              [&_ol>li]:mb-8 [&_ol>li]:pb-6 [&_ol>li]:border-b [&_ol>li]:border-border/30
+              [&_ol>li:last-child]:border-b-0
               animate-fade-in">
               <ReactMarkdown
                 components={{
