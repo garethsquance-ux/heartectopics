@@ -277,6 +277,9 @@ const Dashboard = () => {
               <span className="block mt-2 font-medium text-primary">
                 This app is for tracking and support only - not a substitute for medical advice.
               </span>
+              <span className="block mt-2 text-xs text-muted-foreground">
+                Need help? Contact <a href="mailto:gareth@heartectopics.com" className="text-primary hover:underline">gareth@heartectopics.com</a>
+              </span>
             </p>
           </CardContent>
         </Card>
