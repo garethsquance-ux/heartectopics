@@ -312,7 +312,9 @@ export type Database = {
         Row: {
           created_at: string
           daily_count: number | null
+          document_analysis_count: number | null
           id: string
+          last_document_analysis_date: string | null
           last_message_at: string | null
           last_reset_date: string | null
           monthly_count: number | null
@@ -322,7 +324,9 @@ export type Database = {
         Insert: {
           created_at?: string
           daily_count?: number | null
+          document_analysis_count?: number | null
           id?: string
+          last_document_analysis_date?: string | null
           last_message_at?: string | null
           last_reset_date?: string | null
           monthly_count?: number | null
@@ -332,7 +336,9 @@ export type Database = {
         Update: {
           created_at?: string
           daily_count?: number | null
+          document_analysis_count?: number | null
           id?: string
+          last_document_analysis_date?: string | null
           last_message_at?: string | null
           last_reset_date?: string | null
           monthly_count?: number | null
