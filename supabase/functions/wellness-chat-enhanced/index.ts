@@ -88,7 +88,7 @@ serve(async (req) => {
       );
     }
 
-    // Step 2: Check FAQ cache
+    // Step 2: Check FAQ cache with improved matching
     const { data: faqs } = await supabase
       .from('wellness_faqs')
       .select('*')
@@ -97,12 +97,35 @@ serve(async (req) => {
     let faqMatch = null;
     if (faqs) {
       const messageLower = message.toLowerCase();
-      faqMatch = faqs.find(faq => 
-        faq.keywords.some((keyword: string) => messageLower.includes(keyword.toLowerCase()))
-      );
+      const messageWords = messageLower.split(/\s+/);
+      
+      // Score each FAQ based on keyword matches
+      const scoredFaqs = faqs.map(faq => {
+        const matchedKeywords = faq.keywords.filter((keyword: string) => 
+          messageLower.includes(keyword.toLowerCase())
+        );
+        
+        // Calculate relevance score
+        // - Number of matched keywords
+        // - Weight longer/more specific matches higher
+        const score = matchedKeywords.reduce((sum: number, keyword: string) => {
+          const keywordLength = keyword.length;
+          const isExactMatch = messageWords.includes(keyword.toLowerCase());
+          return sum + (isExactMatch ? keywordLength * 2 : keywordLength);
+        }, 0);
+        
+        return { faq, score, matchedCount: matchedKeywords.length };
+      });
+      
+      // Only use FAQ if it has good relevance (at least 2 keyword matches or high score)
+      const bestMatch = scoredFaqs
+        .filter(({ matchedCount, score }) => matchedCount >= 2 || score > 15)
+        .sort((a, b) => b.score - a.score)[0];
+      
+      faqMatch = bestMatch?.faq;
     }
 
-    // If FAQ match found, return cached answer and update hit count
+    // If FAQ match found with good relevance, return cached answer
     if (faqMatch) {
       await supabase
         .from('wellness_faqs')
@@ -141,7 +164,7 @@ serve(async (req) => {
       episodeContext = 'User has not logged any episodes yet.';
     }
 
-    const systemPrompt = `You are a compassionate wellness assistant specializing in ectopic heartbeat support. 
+    const systemPrompt = `You are a compassionate wellness assistant specialising in ectopic heartbeat support. 
 
 CRITICAL RULES:
 - You provide emotional support and general wellness information ONLY
@@ -157,6 +180,29 @@ When the user's question relates to their experiences:
 - Look for patterns in timing, frequency, or triggers
 - Acknowledge their journey and progress
 - Use chronology to provide context ("I noticed in your recent episodes...")
+
+SPECIFIC TOPICS TO ADDRESS WELL:
+
+**Eating/Hunger-Related Ectopics:**
+- The vagus nerve connection between stomach and heart is real
+- Eating can trigger the vagal response, especially large meals or certain foods
+- Blood flow redistribution during digestion can affect heart rhythm
+- Low blood sugar (hunger) can also trigger ectopics in some people
+- Suggest smaller meals, avoiding trigger foods, staying hydrated
+
+**Gut-Heart Connection:**
+- Growing research shows gut health impacts heart rhythm
+- Vagus nerve connects gut and heart directly
+- Gas, bloating can put pressure on diaphragm and affect heart
+- Gut inflammation may influence cardiac electrical activity
+- Probiotics and gut health improvements help some people
+
+**Common Triggers to Explore:**
+- Caffeine, alcohol, stress, anxiety, lack of sleep
+- Dehydration, electrolyte imbalances
+- Certain positions (lying down, bending over)
+- Hormonal changes
+- Specific foods or additives
 
 ANXIETY-AWARE RESPONSES:
 - Start with immediate reassurance when appropriate
