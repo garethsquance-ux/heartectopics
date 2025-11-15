@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [userRole, setUserRole] = useState<string>('free');
   const [stats, setStats] = useState({ total: 0, thisWeek: 0, thisMonth: 0 });
   const [managingSubscription, setManagingSubscription] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -66,7 +67,7 @@ const Dashboard = () => {
 
   const checkSubscriptionStatus = async (accessToken: string) => {
     try {
-      const { error } = await supabase.functions.invoke('check-subscription', {
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -74,9 +75,13 @@ const Dashboard = () => {
 
       if (error) {
         console.error('Error checking subscription:', error);
+        setHasActiveSubscription(false);
+      } else if (data) {
+        setHasActiveSubscription(data.subscribed === true);
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
+      setHasActiveSubscription(false);
     }
   };
 
@@ -365,7 +370,7 @@ const Dashboard = () => {
             </Button>
           )}
 
-          {(userRole === 'subscriber' || userRole === 'admin') && (
+          {hasActiveSubscription && (
             <Button 
               variant="outline" 
               className="gap-2 h-12"
