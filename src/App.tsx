@@ -14,6 +14,7 @@ import CommunityPost from "./pages/CommunityPost";
 import Admin from "./pages/Admin";
 import SuccessStories from "./pages/SuccessStories";
 import HowTo from "./pages/HowTo";
+import EpisodeMode from "./pages/EpisodeMode";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/success-stories" element={<SuccessStories />} />
           <Route path="/how-to" element={<HowTo />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/episode-mode" element={<EpisodeMode />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
