@@ -252,11 +252,13 @@ const SuccessStories = () => {
             ))
           )}
         </div>
+          </div>
+        </div>
+
+        <BottomNavigation />
+        <FloatingWellnessChat />
       </div>
-      
-      <FloatingWellnessChat />
-      <BottomNavigation />
-    </div>
+    </>
   );
 };
 

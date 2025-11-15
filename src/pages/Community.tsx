@@ -376,14 +376,21 @@ const Community = () => {
               </p>
             </div>
             {isAdmin && (
-              <CreatePostDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <Button size="lg" className="gap-2">
-                  <Plus className="w-5 h-5" />
-                  <span className="hidden sm:inline">Create Post</span>
-                </Button>
-              </CreatePostDialog>
+              <Button size="lg" className="gap-2" onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">Create Post</span>
+              </Button>
             )}
           </div>
+
+          <CreatePostDialog 
+            open={createDialogOpen} 
+            onOpenChange={setCreateDialogOpen}
+            onPostCreated={() => {
+              fetchPosts();
+              if (isAdmin) fetchDraftPosts();
+            }}
+          />
 
           {isAdmin && draftPosts.length > 0 && (
             <div className="space-y-3">
