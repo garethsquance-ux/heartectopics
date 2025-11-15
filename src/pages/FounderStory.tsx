@@ -86,15 +86,46 @@ const FounderStory = () => {
             </section>
 
             <section className="space-y-4">
+              <h2 className="text-2xl font-semibold">The Power of Collective Understanding</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Here's what really excites me about this platform: <strong>nobody is collectively analyzing ectopic data to find 
+                patterns and similarities across thousands of people</strong>. Everyone is trying to figure it out individually, 
+                in isolation. But what if we could pool our experiences together?
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                I want to use AI to analyze all the use cases—everyone's episodes, triggers, patterns, what helps, what doesn't. 
+                When we bring people's data together, we can discover connections that no individual would ever see on their own. 
+                Maybe certain triggers affect people with specific characteristics. Maybe there are patterns between sleep quality, 
+                gut health, and episode frequency that only become clear when we look at hundreds or thousands of cases.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                <strong>Collectively, this is more important than any one person trying to figure it out themselves.</strong> Every 
+                episode you log, every trigger you identify, every note you make—it all contributes to a larger understanding that 
+                could help everyone in our community. Together, we're not just tracking our own ectopics; we're building a knowledge 
+                base that could reveal insights that have never been discovered before.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                This is why your participation matters. This is why sharing your experience in our community matters. We're not just 
+                supporting each other emotionally—we're collectively advancing our understanding of these conditions in ways that 
+                traditional research hasn't yet explored.
+              </p>
+            </section>
+
+            <section className="space-y-4">
               <h2 className="text-2xl font-semibold">Our Mission</h2>
               <p className="text-muted-foreground leading-relaxed">
                 This platform exists to provide what I wish I had when I started this journey: accurate information, 
-                peer support, and tools to take control of my experience. Every feature—from the episode tracker to the 
-                wellness chat to the subscriber community—is designed with you in mind.
+                peer support, tools to understand your own patterns, and—most importantly—<strong>the ability to contribute 
+                to collective knowledge that helps everyone</strong>.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Every feature—from the episode tracker to the wellness chat to the pattern recognition analysis—is designed 
+                with this dual purpose in mind: helping you understand your own experience while contributing to our 
+                community's collective wisdom.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 I maintain a zero-tolerance policy for spam, scams, and sales pitches in our community. This is a safe 
-                space for genuine support, medical information, and shared experiences.
+                space for genuine support, medical information, shared experiences, and collaborative discovery.
               </p>
             </section>
 
