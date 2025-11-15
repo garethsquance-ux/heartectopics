@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
+const PERMANENT_ADMIN_EMAIL = 'garethsquance@gmail.com';
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -33,7 +35,19 @@ serve(async (req) => {
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.id) throw new Error("User not authenticated");
+    if (!user?.email) throw new Error("User email not found");
     logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // SECURITY: Only allow the permanent admin email
+    if (user.email.toLowerCase() !== PERMANENT_ADMIN_EMAIL.toLowerCase()) {
+      return new Response(JSON.stringify({ 
+        ok: false, 
+        error: 'Forbidden: You are not authorized to bootstrap admin access' 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
+    }
 
     // Check if an admin already exists
     const { data: existingAdmins, error: adminQueryError } = await supabase

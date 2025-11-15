@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
+const PERMANENT_ADMIN_EMAIL = 'garethsquance@gmail.com';
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -13,7 +15,7 @@ const logStep = (step: string, details?: any) => {
 
 type ManageBody = {
   action: 'add' | 'remove';
-  role: 'subscriber' | 'admin';
+  role: 'subscriber' | 'moderator' | 'admin';
   user_email: string;
 };
 
@@ -61,7 +63,18 @@ serve(async (req) => {
       throw new Error('Missing required fields: action, role, user_email');
     }
     if (!['add', 'remove'].includes(body.action)) throw new Error('Invalid action');
-    if (!['subscriber', 'admin'].includes(body.role)) throw new Error('Invalid role');
+    if (!['subscriber', 'moderator', 'admin'].includes(body.role)) throw new Error('Invalid role');
+
+    // SECURITY: Prevent anyone from modifying admin role except for the permanent admin
+    if (body.role === 'admin') {
+      return new Response(JSON.stringify({ 
+        ok: false, 
+        error: 'Forbidden: admin role cannot be modified via this endpoint' 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403,
+      });
+    }
 
     // Find target user by email in profiles table
     const { data: targetProfile, error: profErr } = await supabase

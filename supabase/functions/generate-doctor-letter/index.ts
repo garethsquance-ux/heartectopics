@@ -35,7 +35,34 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
-    const { additionalInfo } = await req.json();
+    const body = await req.json();
+    const { additionalInfo } = body;
+    
+    // INPUT VALIDATION: Validate additional info if provided
+    if (additionalInfo !== undefined && additionalInfo !== null) {
+      if (typeof additionalInfo !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Additional info must be a string' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (additionalInfo.length > 5000) {
+        return new Response(
+          JSON.stringify({ error: 'Additional info too long (max 5000 characters)' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Basic content validation
+      if (/<script|javascript:|onerror=/i.test(additionalInfo)) {
+        return new Response(
+          JSON.stringify({ error: 'Additional info contains invalid content' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
     logStep("Additional info received", { hasInfo: !!additionalInfo });
 
     // Fetch user's episodes

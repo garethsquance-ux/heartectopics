@@ -29,7 +29,7 @@ const Admin = () => {
   });
   const [targetEmail, setTargetEmail] = useState("");
   const [roleAction, setRoleAction] = useState<'add' | 'remove'>('add');
-  const [roleName, setRoleName] = useState<'subscriber' | 'admin'>('subscriber');
+  const [roleName, setRoleName] = useState<'subscriber' | 'moderator'>('subscriber');
   const [updatingRole, setUpdatingRole] = useState(false);
 
   useEffect(() => {
@@ -278,13 +278,13 @@ const Admin = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Role</Label>
-                    <Select value={roleName} onValueChange={(v) => setRoleName(v as 'subscriber' | 'admin')}>
+                    <Select value={roleName} onValueChange={(v) => setRoleName(v as 'subscriber' | 'moderator')}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="subscriber">subscriber</SelectItem>
-                        <SelectItem value="admin">admin</SelectItem>
+                        <SelectItem value="subscriber">Subscriber</SelectItem>
+                        <SelectItem value="moderator">Moderator</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

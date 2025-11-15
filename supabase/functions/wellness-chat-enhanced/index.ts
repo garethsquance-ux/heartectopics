@@ -37,7 +37,39 @@ serve(async (req) => {
       );
     }
 
-    const { message } = await req.json();
+    const body = await req.json();
+    const { message } = body;
+
+    // INPUT VALIDATION: Validate message before processing
+    if (!message || typeof message !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Message is required and must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const trimmedMessage = message.trim();
+    if (trimmedMessage.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Message cannot be empty' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (trimmedMessage.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: 'Message too long (max 2000 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Basic content validation
+    if (/<script|javascript:|onerror=/i.test(trimmedMessage)) {
+      return new Response(
+        JSON.stringify({ error: 'Message contains invalid content' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Step 1: Check rate limiting
     const today = new Date().toISOString().split('T')[0];
@@ -96,7 +128,7 @@ serve(async (req) => {
 
     let faqMatch = null;
     if (faqs) {
-      const messageLower = message.toLowerCase();
+      const messageLower = trimmedMessage.toLowerCase();
       const messageWords = messageLower.split(/\s+/);
       
       // Score each FAQ based on keyword matches
