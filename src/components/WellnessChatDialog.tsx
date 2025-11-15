@@ -38,8 +38,13 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
     setLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const { data, error } = await supabase.functions.invoke('wellness-chat', {
         body: { message: userMessage },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : undefined
       });
 
       if (error) {

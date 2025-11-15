@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import EpisodeList from "@/components/EpisodeList";
 import LogEpisodeDialog from "@/components/LogEpisodeDialog";
 import WellnessChatDialog from "@/components/WellnessChatDialog";
+import ExportDataButton from "@/components/ExportDataButton";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -168,7 +169,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-wrap gap-3 mb-6">
           <LogEpisodeDialog onEpisodeAdded={fetchEpisodes}>
             <Button className="gap-2 h-12" size="lg">
               <Plus className="h-5 w-5" />
@@ -182,6 +183,8 @@ const Dashboard = () => {
               Wellness Chat
             </Button>
           </WellnessChatDialog>
+          
+          <ExportDataButton />
         </div>
 
         <Card className="shadow-card">
