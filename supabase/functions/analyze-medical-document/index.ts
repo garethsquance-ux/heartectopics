@@ -12,10 +12,10 @@ serve(async (req) => {
   }
 
   try {
-    const { documentText, fileName } = await req.json();
+    const { documentText, fileName, imageData, fileType } = await req.json();
 
-    if (!documentText) {
-      throw new Error('No document text provided');
+    if (!documentText && !imageData) {
+      throw new Error('No document text or image provided');
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -52,6 +52,25 @@ Return a JSON object with these fields (use null if not found):
 
 Be conservative - only extract information you're confident about. If you're unsure, leave it null.`;
 
+    // Build the user message based on whether we have text or image
+    let userMessage;
+    if (imageData) {
+      // For images, use vision capabilities
+      userMessage = {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Analyze this medical document image for ectopic heartbeat episode information:' },
+          { type: 'image_url', image_url: { url: imageData } }
+        ]
+      };
+    } else {
+      // For text documents
+      userMessage = {
+        role: 'user',
+        content: `Analyze this medical document:\n\n${documentText}`
+      };
+    }
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -62,7 +81,7 @@ Be conservative - only extract information you're confident about. If you're uns
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Analyze this medical document:\n\n${documentText}` }
+          userMessage
         ],
         response_format: { type: 'json_object' }
       }),
