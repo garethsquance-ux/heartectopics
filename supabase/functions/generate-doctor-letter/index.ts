@@ -35,6 +35,22 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
+    // SECURITY: Check if user has subscriber or admin access
+    const { data: roles } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+
+    const hasSubscriberAccess = roles?.some(r => r.role === 'subscriber' || r.role === 'admin');
+    
+    if (!hasSubscriberAccess) {
+      return new Response(
+        JSON.stringify({ error: 'This feature is only available to subscribers. Please upgrade to access AI-powered doctor letters.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    logStep("Subscriber access verified");
+
     const body = await req.json();
     const { additionalInfo } = body;
     

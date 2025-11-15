@@ -3,20 +3,27 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
+import { SEO } from "@/components/SEO";
 
 const FounderStory = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/dashboard')}
-          className="mb-6"
-        >
-          ← Back to Dashboard
-        </Button>
+    <>
+      <SEO 
+        title="Founder's Story - Living with Ectopic Heartbeats"
+        description="A personal journey of living with ectopic heartbeats (PVCs) since childhood. Learn about the founder's experience with benign arrhythmia, anxiety, and building a support community."
+        keywords="ectopic heartbeat experience, living with PVCs, heart palpitation anxiety, PTSD and heart palpitations, benign arrhythmia support"
+      />
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
+        <div className="container mx-auto px-4 py-12 max-w-4xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="mb-6"
+          >
+            ← Home
+          </Button>
 
         <div className="space-y-8">
           <div className="text-center space-y-4">
@@ -178,6 +185,7 @@ const FounderStory = () => {
       <FloatingWellnessChat />
       <BottomNavigation />
     </div>
+    </>
   );
 };
 

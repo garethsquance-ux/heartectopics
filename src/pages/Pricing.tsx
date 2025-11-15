@@ -121,10 +121,10 @@ const Pricing = () => {
       <div className="container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/')}
           className="mb-6"
         >
-          ← Back to Dashboard
+          ← Home
         </Button>
 
         <div className="text-center space-y-4 mb-12">

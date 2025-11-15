@@ -60,6 +60,9 @@ const Community = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      // Always fetch posts for public viewing
+      await fetchPosts();
+      
       if (!session) {
         setLoading(false);
         return;
@@ -75,11 +78,8 @@ const Community = () => {
       setHasAccess(userHasAccess);
       setIsAdmin(userIsAdmin);
 
-      if (userHasAccess) {
-        await fetchPosts();
-        if (userIsAdmin) {
-          await fetchDraftPosts();
-        }
+      if (userIsAdmin) {
+        await fetchDraftPosts();
       }
     } catch (error) {
       console.error('Error checking access:', error);
@@ -366,22 +366,23 @@ const Community = () => {
         </Button>
 
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-4xl font-bold">Community</h1>
-              <p className="text-muted-foreground mt-2">
-                Latest updates, research, and stories from our community
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">Community</h1>
+              <p className="text-muted-foreground">
+                {hasAccess 
+                  ? "Research, guides, and personal stories from the community" 
+                  : "Read-only access. Subscribe to join discussions and post content."}
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              {isAdmin && (
-                <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Create Post
+            {isAdmin && (
+              <CreatePostDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <Button size="lg" className="gap-2">
+                  <Plus className="w-5 h-5" />
+                  <span className="hidden sm:inline">Create Post</span>
                 </Button>
-              )}
-              <Heart className="w-12 h-12 text-primary animate-pulse" />
-            </div>
+              </CreatePostDialog>
+            )}
           </div>
 
           {isAdmin && draftPosts.length > 0 && (

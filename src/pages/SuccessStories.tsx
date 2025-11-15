@@ -10,6 +10,7 @@ import { Heart, Send, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
+import { SEO } from "@/components/SEO";
 
 interface Story {
   id: string;
@@ -129,39 +130,47 @@ const SuccessStories = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background p-4 pb-20 md:pb-4">
-      <div className="max-w-4xl mx-auto py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-2">
-              <Heart className="h-8 w-8 text-primary" />
-              Success Stories
-            </h1>
-            <p className="text-muted-foreground">
-              Real stories from our community members
-            </p>
-          </div>
-          <Button onClick={() => navigate("/dashboard")}>
-            Back to Dashboard
+    <>
+      <SEO 
+        title="Success Stories - Recovery from Ectopic Heartbeats"
+        description="Read inspiring success stories from people who have overcome anxiety about ectopic heartbeats and PVCs. Real experiences of managing benign arrhythmia and finding peace."
+        keywords="ectopic heartbeat recovery, PVC success stories, overcoming heart anxiety, heart palpitation testimonials, benign arrhythmia recovery"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background pb-20 md:pb-0">
+        <div className="container mx-auto px-4 py-12 max-w-4xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="mb-6"
+          >
+            ← Home
           </Button>
-        </div>
 
-        {!showForm && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Share Your Journey</CardTitle>
-              <CardDescription>
-                Inspire others by sharing your wellness story
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => setShowForm(true)} className="w-full">
-                <Send className="mr-2 h-4 w-4" />
-                Write Your Story
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+          <div className="space-y-8">
+            <div className="text-center space-y-4">
+              <Heart className="w-16 h-16 mx-auto text-primary animate-pulse" />
+              <h1 className="text-4xl font-bold">Success Stories</h1>
+              <p className="text-xl text-muted-foreground">
+                Real stories from our community members
+              </p>
+            </div>
+
+            {!showForm && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Share Your Journey</CardTitle>
+                  <CardDescription>
+                    Inspire others by sharing your wellness story
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={() => setShowForm(true)} className="w-full">
+                    <Send className="mr-2 h-4 w-4" />
+                    Write Your Story
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
         {showForm && (
           <Card className="mb-8">
