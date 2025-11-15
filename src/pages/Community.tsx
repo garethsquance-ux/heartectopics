@@ -4,11 +4,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Lock, Plus, Edit } from "lucide-react";
+import { Heart, Lock, Plus, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { CreatePostDialog } from "@/components/CreatePostDialog";
 import { SEO } from "@/components/SEO";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Post {
   id: string;
@@ -17,6 +27,7 @@ interface Post {
   category: string;
   created_at: string;
   author_id: string;
+  display_order: number | null;
 }
 
 const Community = () => {
@@ -28,6 +39,7 @@ const Community = () => {
   const [hasAccess, setHasAccess] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAccess();
@@ -75,6 +87,7 @@ const Community = () => {
       .from('community_posts')
       .select('*')
       .eq('is_published', true)
+      .order('display_order', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -130,6 +143,71 @@ const Community = () => {
     await fetchPosts();
     if (isAdmin) {
       await fetchDraftPosts();
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!deletePostId) return;
+
+    try {
+      const { error } = await supabase
+        .from('community_posts')
+        .delete()
+        .eq('id', deletePostId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Post deleted successfully",
+      });
+
+      await fetchPosts();
+      await fetchDraftPosts();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletePostId(null);
+    }
+  };
+
+  const handleMovePost = async (postId: string, direction: 'up' | 'down') => {
+    const currentIndex = posts.findIndex(p => p.id === postId);
+    if (currentIndex === -1) return;
+    
+    const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (swapIndex < 0 || swapIndex >= posts.length) return;
+
+    try {
+      const currentPost = posts[currentIndex];
+      const swapPost = posts[swapIndex];
+
+      // Swap display_order values
+      const { error: error1 } = await supabase
+        .from('community_posts')
+        .update({ display_order: swapPost.display_order })
+        .eq('id', currentPost.id);
+
+      const { error: error2 } = await supabase
+        .from('community_posts')
+        .update({ display_order: currentPost.display_order })
+        .eq('id', swapPost.id);
+
+      if (error1 || error2) throw error1 || error2;
+
+      await fetchPosts();
+    } catch (error) {
+      console.error('Error reordering posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reorder posts",
+        variant: "destructive",
+      });
     }
   };
 
@@ -301,14 +379,16 @@ const Community = () => {
             </Card>
           ) : (
             <div className="space-y-4">
-              {posts.map((post) => (
+              {posts.map((post, index) => (
                 <Card 
                   key={post.id} 
-                  className="p-6 space-y-3 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => navigate(`/community/${post.id}`)}
+                  className="p-6 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-2">
+                    <div 
+                      className="flex-1 space-y-2 cursor-pointer"
+                      onClick={() => navigate(`/community/${post.id}`)}
+                    >
                       <div className="flex items-center gap-2">
                         <Badge className={getCategoryColor(post.category)}>
                           {formatCategory(post.category)}
@@ -322,8 +402,49 @@ const Community = () => {
                         {post.content.substring(0, 200)}...
                       </p>
                     </div>
+                    {isAdmin && (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMovePost(post.id, 'up');
+                          }}
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMovePost(post.id, 'down');
+                          }}
+                          disabled={index === posts.length - 1}
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletePostId(post.id);
+                          }}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/community/${post.id}`)}
+                  >
                     Read More →
                   </Button>
                 </Card>
@@ -338,6 +459,24 @@ const Community = () => {
         onOpenChange={setCreateDialogOpen}
         onPostCreated={handlePostCreated}
       />
+
+      <AlertDialog open={!!deletePostId} onOpenChange={() => setDeletePostId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+              All comments on this post will also be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePost} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </>
   );

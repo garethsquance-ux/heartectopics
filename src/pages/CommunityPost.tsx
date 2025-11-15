@@ -5,10 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Flag } from "lucide-react";
+import { Heart, Flag, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { SEO } from "@/components/SEO";
+import { CommunityGuidelines } from "@/components/CommunityGuidelines";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Post {
   id: string;
@@ -35,11 +46,30 @@ const CommunityPost = () => {
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
 
   useEffect(() => {
+    checkUserRole();
     fetchPost();
     fetchComments();
   }, [postId]);
+
+  const checkUserRole = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    setCurrentUserId(session.user.id);
+
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id);
+
+    const userIsAdmin = roles?.some(r => r.role === 'admin') || false;
+    setIsAdmin(userIsAdmin);
+  };
 
   const fetchPost = async () => {
     const { data, error } = await supabase
@@ -95,6 +125,27 @@ const CommunityPost = () => {
       return;
     }
 
+    // AI moderation check
+    try {
+      const { data: moderationData, error: moderationError } = await supabase.functions.invoke(
+        'moderate-content',
+        { body: { content: newComment } }
+      );
+
+      if (!moderationError && moderationData && !moderationData.safe) {
+        toast({
+          title: "Comment Not Allowed",
+          description: moderationData.reason || "Your comment was flagged by our moderation system. Please be respectful and follow community guidelines.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+    } catch (moderationError) {
+      console.error('Moderation check failed:', moderationError);
+      // Continue with posting if moderation service is unavailable
+    }
+
     const { error } = await supabase
       .from('community_comments')
       .insert({
@@ -144,6 +195,35 @@ const CommunityPost = () => {
     }
   };
 
+  const handleDeleteComment = async () => {
+    if (!deleteCommentId) return;
+
+    try {
+      const { error } = await supabase
+        .from('community_comments')
+        .delete()
+        .eq('id', deleteCommentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Comment deleted successfully",
+      });
+
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete comment",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteCommentId(null);
+    }
+  };
+
   if (loading || !post) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -189,6 +269,8 @@ const CommunityPost = () => {
             </div>
           </Card>
 
+          <CommunityGuidelines />
+
           <Card className="p-6 space-y-6">
             <h2 className="text-2xl font-semibold">Comments ({comments.length})</h2>
             
@@ -217,15 +299,27 @@ const CommunityPost = () => {
                       </p>
                       <p className="whitespace-pre-wrap">{comment.content}</p>
                     </div>
-                    {!comment.is_flagged && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleFlagComment(comment.id)}
-                      >
-                        <Flag className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {(isAdmin || comment.user_id === currentUserId) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteCommentId(comment.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {!comment.is_flagged && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleFlagComment(comment.id)}
+                        >
+                          <Flag className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   {comment.is_flagged && (
                     <Badge variant="destructive" className="text-xs">
@@ -243,6 +337,23 @@ const CommunityPost = () => {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={!!deleteCommentId} onOpenChange={() => setDeleteCommentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteComment} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </>
   );
