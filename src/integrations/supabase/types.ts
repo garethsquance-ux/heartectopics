@@ -61,6 +61,7 @@ export type Database = {
           category: string
           content: string
           created_at: string
+          display_order: number | null
           id: string
           is_published: boolean | null
           title: string
@@ -71,6 +72,7 @@ export type Database = {
           category: string
           content: string
           created_at?: string
+          display_order?: number | null
           id?: string
           is_published?: boolean | null
           title: string
@@ -81,6 +83,7 @@ export type Database = {
           category?: string
           content?: string
           created_at?: string
+          display_order?: number | null
           id?: string
           is_published?: boolean | null
           title?: string
