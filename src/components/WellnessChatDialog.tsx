@@ -1,0 +1,166 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Send, Bot, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface WellnessChatDialogProps {
+  children: React.ReactNode;
+}
+
+const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: "Hi! I'm here to provide support and information about ectopic heartbeats. How are you feeling today? Remember, I'm here for emotional support only - not medical advice.",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('wellness-chat', {
+        body: { message: userMessage },
+      });
+
+      if (error) {
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
+        }
+        if (error.message?.includes('402')) {
+          throw new Error('Service temporarily unavailable. Please try again later.');
+        }
+        throw error;
+      }
+
+      if (data?.message) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+      } else {
+        throw new Error('No response from assistant');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to get response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl h-[600px] flex flex-col p-0">
+        <DialogHeader className="p-6 pb-4">
+          <DialogTitle>Wellness Support Chat</DialogTitle>
+          <DialogDescription>
+            Get reassurance and information about ectopic heartbeats
+          </DialogDescription>
+        </DialogHeader>
+
+        <ScrollArea className="flex-1 px-6">
+          <div className="space-y-4 pb-4">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "flex gap-3 items-start",
+                  message.role === 'user' && "flex-row-reverse"
+                )}
+              >
+                <div className={cn(
+                  "p-2 rounded-full shrink-0",
+                  message.role === 'user' ? "bg-primary/10" : "bg-accent"
+                )}>
+                  {message.role === 'user' ? (
+                    <User className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Bot className="h-5 w-5 text-foreground" />
+                  )}
+                </div>
+                <div
+                  className={cn(
+                    "rounded-2xl px-4 py-3 max-w-[80%]",
+                    message.role === 'user'
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
+                  )}
+                >
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex gap-3 items-start">
+                <div className="p-2 rounded-full bg-accent shrink-0">
+                  <Bot className="h-5 w-5 text-foreground animate-pulse" />
+                </div>
+                <div className="rounded-2xl px-4 py-3 bg-muted">
+                  <p className="text-sm text-muted-foreground">Thinking...</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        <div className="p-6 pt-4 border-t">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Type your message... (e.g., 'I felt a skip just now')"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={loading}
+              className="h-12"
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              size="icon"
+              className="h-12 w-12 shrink-0"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            This is support only - not medical advice. Contact your doctor for medical concerns.
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default WellnessChatDialog;
