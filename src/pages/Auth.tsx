@@ -115,7 +115,7 @@ const Auth = () => {
           <CardContent className="space-y-4 text-sm">
             <p className="text-muted-foreground leading-relaxed">
               I've lived with ectopic heartbeats since childhood. What started as innocent curiosity 
-              became overwhelming fear. I've rushed to the ER countless times, undergone multiple tests, 
+              became overwhelming fear. I've rushed to the hospital countless times, undergone multiple tests, 
               only to hear "they're benign, try not to worry."
             </p>
             <p className="text-muted-foreground leading-relaxed">
