@@ -336,6 +336,35 @@ const Dashboard = () => {
             </Button>
           )}
 
+          {userRole !== 'admin' && (
+            <Button 
+              variant="outline" 
+              className="gap-2 h-12"
+              size="lg"
+              onClick={async () => {
+                try {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session) return;
+                  const { data, error } = await supabase.functions.invoke('bootstrap-admin', {
+                    headers: { Authorization: `Bearer ${session.access_token}` }
+                  });
+                  if (error) throw error;
+                  if (data?.ok) {
+                    toast({ title: 'Success!', description: 'You are now an admin. Refresh the page.' });
+                    await fetchUserRole(session.user.id);
+                  } else {
+                    toast({ title: 'Info', description: data?.error || 'Admin already exists', variant: 'default' });
+                  }
+                } catch (err: any) {
+                  toast({ title: 'Error', description: err.message, variant: 'destructive' });
+                }
+              }}
+            >
+              <Shield className="h-5 w-5" />
+              Claim Admin (First Time)
+            </Button>
+          )}
+
           {(userRole === 'subscriber' || userRole === 'admin') && (
             <Button 
               variant="outline" 
