@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Users, BookOpen, BookHeart } from "lucide-react";
+import { Users, BookOpen, BookHeart, Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DesktopNavigation = () => {
@@ -7,6 +7,7 @@ const DesktopNavigation = () => {
   const location = useLocation();
 
   const navItems = [
+    { icon: Book, label: "How To", path: "/how-to" },
     { icon: Users, label: "Community", path: "/community" },
     { icon: BookHeart, label: "Success Stories", path: "/success-stories" },
     { icon: BookOpen, label: "Founder's Story", path: "/founder-story" },
