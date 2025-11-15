@@ -8,6 +8,7 @@ import { Heart, Lock, Plus, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { CreatePostDialog } from "@/components/CreatePostDialog";
+import { SEO } from "@/components/SEO";
 
 interface Post {
   id: string;
@@ -158,7 +159,13 @@ const Community = () => {
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <>
+        <SEO
+          title="Community - Subscriber Only"
+          description="Join our subscriber community for the latest research, medical advances, and peer support for ectopic heartbeats and PVCs."
+          keywords="ectopic heartbeat community, PVC support group, heart palpitations forum"
+        />
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4 py-12">
           <Button 
             variant="ghost" 
@@ -201,11 +208,18 @@ const Community = () => {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <>
+      <SEO
+        title="Community - Ectopic Heartbeat Research & Support"
+        description="Latest research, medical advances, and personal stories about ectopic heartbeats (PVCs). Connect with others who understand your journey with premature ventricular contractions."
+        keywords="ectopic heartbeat research, PVC studies, heart palpitations support, premature ventricular contractions information, ectopic beat stories"
+      />
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
@@ -325,6 +339,7 @@ const Community = () => {
         onPostCreated={handlePostCreated}
       />
     </div>
+    </>
   );
 };
 

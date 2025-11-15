@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, Activity, MessageCircle, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/SEO";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -30,7 +31,31 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background">
+    <>
+      <SEO
+        title="Ectopic Heartbeat Support & PVC Tracker"
+        description="Understanding and managing ectopic heartbeats (PVCs) with confidence. Track episodes, view patterns, and get supportive guidance for premature ventricular contractions."
+        keywords="ectopic heartbeats, PVC, premature ventricular contractions, heart palpitations, benign arrhythmia, heart rhythm tracker, ectopic beat anxiety, PVC symptoms, heart episode tracking"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Heart Wellness Tracker",
+          "description": "Track and understand ectopic heartbeats with confidence",
+          "applicationCategory": "HealthApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Track heart episodes",
+            "View patterns and statistics",
+            "AI wellness support",
+            "Community support"
+          ]
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background">
       <div className="container mx-auto px-4 py-12 md:py-20">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-6">
@@ -113,6 +138,7 @@ const Index = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
