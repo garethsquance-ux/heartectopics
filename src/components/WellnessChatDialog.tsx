@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -22,7 +22,7 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hi! I'm here to provide support and information about ectopic heartbeats. How are you feeling today? Remember, I'm here for emotional support only - not medical advice.",
+      content: "Hi! I'm 💙 Heart Buddy, your wellness companion. I'm here to provide support and information about ectopic heartbeats. How are you feeling today? Remember, I'm here for emotional support only - not medical advice.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -99,9 +99,12 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
       </DialogTrigger>
       <DialogContent className="max-w-2xl h-[600px] flex flex-col p-0">
         <DialogHeader className="p-6 pb-4">
-          <DialogTitle>Wellness Support Chat</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-primary" />
+            💙 Heart Buddy
+          </DialogTitle>
           <DialogDescription>
-            Get reassurance and information about ectopic heartbeats
+            Your wellness companion for managing ectopic heartbeats
           </DialogDescription>
         </DialogHeader>
 
@@ -155,7 +158,7 @@ const WellnessChatDialog = ({ children }: WellnessChatDialogProps) => {
         <div className="p-6 pt-4 border-t">
           <div className="flex gap-2">
             <Input
-              placeholder="Type your message... (e.g., 'I felt a skip just now')"
+              placeholder="Ask Heart Buddy anything... (e.g., 'I felt a skip just now')"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
