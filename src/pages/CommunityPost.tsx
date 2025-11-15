@@ -289,8 +289,33 @@ const CommunityPost = () => {
             <p className="text-sm text-muted-foreground">
               Posted {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </p>
-            <div className="prose prose-lg max-w-none dark:prose-invert">
-              <ReactMarkdown>{post.content}</ReactMarkdown>
+            <div className="prose prose-lg max-w-none dark:prose-invert
+              prose-headings:font-bold prose-headings:text-foreground
+              prose-h1:text-3xl prose-h1:mb-4 prose-h1:mt-8 prose-h1:pb-2 prose-h1:border-b prose-h1:border-border
+              prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-6 prose-h2:text-primary
+              prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-4 prose-h3:text-primary/80
+              prose-p:text-base prose-p:leading-7 prose-p:mb-4 prose-p:text-foreground/90
+              prose-strong:text-primary prose-strong:font-semibold
+              prose-ul:my-4 prose-ul:space-y-2
+              prose-li:text-foreground/90 prose-li:leading-relaxed
+              animate-fade-in">
+              <ReactMarkdown
+                components={{
+                  h1: ({node, ...props}) => <h1 className="flex items-center gap-2" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="flex items-center gap-2" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="flex items-center gap-2" {...props} />,
+                  strong: ({node, ...props}) => <strong className="bg-primary/10 px-1 rounded" {...props} />,
+                  ul: ({node, ...props}) => <ul className="space-y-2 ml-4" {...props} />,
+                  li: ({node, ...props}) => (
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1.5 text-xs">●</span>
+                      <span className="flex-1" {...props} />
+                    </li>
+                  ),
+                }}
+              >
+                {post.content}
+              </ReactMarkdown>
             </div>
           </Card>
 
