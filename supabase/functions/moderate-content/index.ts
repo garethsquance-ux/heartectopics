@@ -21,9 +21,28 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { content, type }: ModerationRequest = await req.json();
 
-    if (!content) {
+    // Input validation
+    if (!content || typeof content !== 'string') {
       return new Response(
-        JSON.stringify({ error: "Content is required" }),
+        JSON.stringify({ error: "Valid content string is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Length validation
+    const MAX_CONTENT_LENGTH = 50000;
+    if (content.length > MAX_CONTENT_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Content too long. Maximum ${MAX_CONTENT_LENGTH} characters` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Type validation
+    const VALID_TYPES = ['story', 'comment'];
+    if (!type || !VALID_TYPES.includes(type)) {
+      return new Response(
+        JSON.stringify({ error: "Type must be 'story' or 'comment'" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

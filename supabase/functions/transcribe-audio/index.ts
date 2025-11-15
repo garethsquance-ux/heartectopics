@@ -47,6 +47,22 @@ serve(async (req) => {
       throw new Error("No audio data provided");
     }
 
+    // Input validation for audio data
+    if (typeof audio !== 'string') {
+      throw new Error("Audio data must be a base64 string");
+    }
+
+    // Validate audio size (max 25MB base64 encoded = ~33MB before encoding)
+    const MAX_AUDIO_SIZE = 25 * 1024 * 1024;
+    if (audio.length > MAX_AUDIO_SIZE) {
+      throw new Error("Audio file too large. Maximum size is 25MB");
+    }
+
+    // Validate base64 format
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(audio)) {
+      throw new Error("Invalid audio data format");
+    }
+
     console.log("Processing audio transcription...");
     
     const binaryAudio = processBase64Chunks(audio);
