@@ -47,6 +47,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
   const setDialogOpen = isControlled ? (onOpenChange || (() => {})) : setInternalOpen;
 
   const [loading, setLoading] = useState(false);
+  const [episodeDate, setEpisodeDate] = useState("");
   const [symptoms, setSymptoms] = useState("");
   const [notes, setNotes] = useState("");
   const [duration, setDuration] = useState("");
@@ -60,12 +61,14 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
   // Update form when editing an episode
   useEffect(() => {
     if (editEpisode) {
+      setEpisodeDate(editEpisode.episode_date ? new Date(editEpisode.episode_date).toISOString().slice(0, 16) : "");
       setSymptoms(editEpisode.symptoms || "");
       setNotes(editEpisode.notes || "");
       setDuration(editEpisode.duration_seconds ? String(editEpisode.duration_seconds) : "");
       setSeverity(editEpisode.severity || "mild");
     } else if (!dialogOpen) {
       // Reset form when dialog closes and not editing
+      setEpisodeDate("");
       setSymptoms("");
       setNotes("");
       setDuration("");
@@ -135,6 +138,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
     const allSymptoms: string[] = [];
     let combinedDuration = 0;
     let highestSeverity: "mild" | "moderate" | "severe" = "mild";
+    let extractedEpisodeDate: string | null = null;
 
     try {
       for (const file of files) {
@@ -144,12 +148,29 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
           if (result.notes) allNotes.push(result.notes);
           if (result.symptoms) allSymptoms.push(result.symptoms);
           if (result.durationSeconds) combinedDuration += result.durationSeconds;
+          
+          // Use the first valid episode date found
+          if (result.episodeDate && !extractedEpisodeDate) {
+            extractedEpisodeDate = result.episodeDate;
+          }
+          
           if (result.severity) {
             const severities = { mild: 1, moderate: 2, severe: 3 };
             if (severities[result.severity] > severities[highestSeverity]) {
               highestSeverity = result.severity;
             }
           }
+        }
+      }
+
+      // Set episode date if extracted from documents
+      if (extractedEpisodeDate) {
+        try {
+          const date = new Date(extractedEpisodeDate);
+          // Format for datetime-local input: YYYY-MM-DDTHH:mm
+          setEpisodeDate(date.toISOString().slice(0, 16));
+        } catch (e) {
+          console.error('Error parsing episode date:', e);
         }
       }
 
@@ -178,9 +199,18 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
 
       setSeverity(highestSeverity);
 
+      const extractedInfo = [];
+      if (extractedEpisodeDate) extractedInfo.push('📅 episode date');
+      if (allEncouragements.length > 0) extractedInfo.push('✨ positive findings');
+      
+      const descriptionParts = [`Successfully processed ${files.length} file(s).`];
+      if (extractedInfo.length > 0) {
+        descriptionParts.push(`Extracted: ${extractedInfo.join(', ')}`);
+      }
+
       toast({
         title: "All documents analyzed",
-        description: `Successfully processed ${files.length} file(s). ${allEncouragements.length > 0 ? '✨ Positive findings extracted!' : ''}`,
+        description: descriptionParts.join(' '),
       });
     } catch (error: any) {
       console.error('Error analyzing documents:', error);
@@ -269,6 +299,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
         .from('heart_episodes')
         .insert({
           user_id: user.id,
+          episode_date: episodeDate || new Date().toISOString(),
           symptoms: symptoms || null,
           notes: notes || null,
           duration_seconds: duration ? parseInt(duration) : null,
@@ -314,6 +345,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       });
 
       // Reset form
+      setEpisodeDate("");
       setSymptoms("");
       setNotes("");
       setDuration("");
@@ -430,6 +462,20 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="episodeDate">Episode Date & Time</Label>
+              <Input
+                id="episodeDate"
+                type="datetime-local"
+                value={episodeDate}
+                onChange={(e) => setEpisodeDate(e.target.value)}
+                placeholder="When did this episode occur?"
+              />
+              <p className="text-xs text-muted-foreground">
+                {episodeDate ? "Date extracted from document or manually entered" : "Leave blank to use current time, or let AI extract from document"}
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="severity">Severity</Label>
               <Select value={severity} onValueChange={setSeverity}>
                 <SelectTrigger id="severity">
@@ -484,6 +530,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
               onClick={() => {
                 setDialogOpen(false);
                 // Reset on cancel
+                setEpisodeDate("");
                 setSymptoms("");
                 setNotes("");
                 setDuration("");
