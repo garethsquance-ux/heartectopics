@@ -103,22 +103,54 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/10 to-background p-4">
-      <Card className="w-full max-w-md shadow-card">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <Heart className="h-8 w-8 text-primary" />
+      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6 items-start">
+        {/* Founder Story Section */}
+        <Card className="shadow-card border-primary/20 hidden md:block">
+          <CardHeader>
+            <div className="flex items-center gap-2 mb-3">
+              <Heart className="h-6 w-6 text-primary" />
+              <CardTitle className="text-xl">Why This Exists</CardTitle>
             </div>
-          </div>
-          <CardTitle className="text-2xl font-bold">
-            {isLogin ? "Welcome back" : "Create account"}
-          </CardTitle>
-          <CardDescription>
-            {isLogin
-              ? "Sign in to track your heart health journey"
-              : "Start your wellness journey today"}
-          </CardDescription>
-        </CardHeader>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <p className="text-muted-foreground leading-relaxed">
+              I've lived with ectopic heartbeats since childhood. What started as innocent curiosity 
+              became overwhelming fear. I've rushed to the ER countless times, undergone multiple tests, 
+              only to hear "they're benign, try not to worry."
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              But anyone living with this knows—you can't just "not worry." The psychological struggle 
+              is real. The isolation is real.
+            </p>
+            <p className="text-muted-foreground leading-relaxed font-medium text-foreground">
+              Through years of research, I discovered the gut-heart connection that actually helped me. 
+              I built this platform because I know how hard this journey is, and no one should feel alone in it.
+            </p>
+            <div className="pt-2 border-t border-border">
+              <p className="text-xs text-muted-foreground italic">
+                — Built by someone who truly understands
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Auth Form */}
+        <Card className="w-full shadow-card">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Heart className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              {isLogin ? "Welcome back" : "Create account"}
+            </CardTitle>
+            <CardDescription>
+              {isLogin
+                ? "Sign in to track your heart health journey"
+                : "Join a community that truly understands"}
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
@@ -167,6 +199,7 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
