@@ -13,6 +13,7 @@ import { CommunityGuidelines } from "@/components/CommunityGuidelines";
 import { z } from "zod";
 import BottomNavigation from "@/components/BottomNavigation";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
+import ReactMarkdown from "react-markdown";
 
 const commentSchema = z.object({
   content: z.string()
@@ -289,7 +290,7 @@ const CommunityPost = () => {
               Posted {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </p>
             <div className="prose prose-lg max-w-none dark:prose-invert">
-              <p className="whitespace-pre-wrap">{post.content}</p>
+              <ReactMarkdown>{post.content}</ReactMarkdown>
             </div>
           </Card>
 
