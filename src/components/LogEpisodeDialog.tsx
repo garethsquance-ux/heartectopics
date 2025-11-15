@@ -28,18 +28,6 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) =
   const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
-  const startRecording = async (field: 'notes' | 'symptoms') => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
@@ -60,13 +48,6 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded }: LogEpisodeDialogProps) =
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setRecordingField(null);
-    }
-  };
 
   const transcribeAudio = async (audioBlob: Blob, field: 'notes' | 'symptoms') => {
     setTranscribing(true);
