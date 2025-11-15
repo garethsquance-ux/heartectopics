@@ -77,7 +77,7 @@ const Index = () => {
             Non-diagnostic, support-focused wellness tool.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button
               size="lg"
               onClick={() => navigate('/auth')}
@@ -93,6 +93,14 @@ const Index = () => {
             >
               Sign In
             </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-4 justify-center mb-16 text-sm">
+            <Button variant="link" onClick={() => navigate('/pricing')}>Pricing</Button>
+            <Button variant="link" onClick={() => navigate('/founder-story')}>Founder Story</Button>
+            <Button variant="link" onClick={() => navigate('/success-stories')}>Success Stories</Button>
+            <Button variant="link" onClick={() => navigate('/community')}>Community</Button>
+            <Button variant="link" onClick={() => navigate('/how-to')}>How To Use</Button>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mt-16">

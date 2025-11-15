@@ -108,10 +108,10 @@ You've got this! 💙`;
         <div className="container mx-auto px-4 py-12 max-w-4xl">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/')}
             className="mb-6"
           >
-            ← Back to Dashboard
+            ← Home
           </Button>
 
           <div className="space-y-8">
