@@ -56,6 +56,8 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
   const [analyzing, setAnalyzing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [documentScansRemaining, setDocumentScansRemaining] = useState<number | null>(null);
+  const [isSubscriber, setIsSubscriber] = useState(false);
   const { toast } = useToast();
 
   // Update form when editing an episode
@@ -78,6 +80,44 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       setUploadError(null);
     }
   }, [editEpisode, dialogOpen]);
+
+  // Check document analysis usage on open
+  useEffect(() => {
+    if (dialogOpen) {
+      checkDocumentUsage();
+    }
+  }, [dialogOpen]);
+
+  const checkDocumentUsage = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id);
+
+      const subscriberStatus = roles?.some(r => r.role === 'subscriber' || r.role === 'admin') || false;
+      setIsSubscriber(subscriberStatus);
+
+      const { data: usage } = await supabase
+        .from('user_chat_usage')
+        .select('document_analysis_count, last_document_analysis_date')
+        .eq('user_id', session.user.id)
+        .single();
+
+      const limit = subscriberStatus ? 20 : 2;
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      const lastAnalysisMonth = usage?.last_document_analysis_date?.substring(0, 7);
+
+      // Reset count if it's a new month
+      const count = lastAnalysisMonth === currentMonth ? (usage?.document_analysis_count || 0) : 0;
+      setDocumentScansRemaining(Math.max(0, limit - count));
+    } catch (error) {
+      console.error('Error checking document usage:', error);
+    }
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -261,7 +301,28 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle rate limit error
+        if (error.message?.includes('limit')) {
+          const upgradeMsg = isSubscriber 
+            ? 'You have reached your monthly limit of 20 document scans. Your scans will reset next month.'
+            : 'You have used all 2 free document scans this month. Upgrade to Subscriber for 20 scans per month!';
+          
+          toast({
+            title: "Document Scan Limit Reached",
+            description: upgradeMsg,
+            variant: "destructive",
+          });
+          setDocumentScansRemaining(0);
+          throw error;
+        }
+        throw error;
+      }
+
+      // Update remaining scans from response
+      if (data.usage) {
+        setDocumentScansRemaining(data.usage.remaining);
+      }
 
       if (data.success && data.extractedData) {
         return data.extractedData;
@@ -387,7 +448,22 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
           <div className="space-y-4">
             {/* Document Upload Section */}
             <div className="space-y-2">
-              <Label htmlFor="document">Upload Medical Document (Optional)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="document">Upload Medical Document (Optional)</Label>
+                {documentScansRemaining !== null && (
+                  <span className="text-xs text-muted-foreground">
+                    {documentScansRemaining > 0 ? (
+                      <span className="text-primary">
+                        ✨ {documentScansRemaining} AI scan{documentScansRemaining !== 1 ? 's' : ''} remaining this month
+                      </span>
+                    ) : (
+                      <span className="text-destructive">
+                        ⚠️ No scans remaining {!isSubscriber && '- Upgrade for 20/month'}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Best: Text files (.txt) or images (JPG/PNG with AI vision). Word docs also supported. AI extracts episode details automatically.
               </p>
@@ -400,7 +476,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
                     onChange={handleFileSelect}
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt"
                     className="flex-1"
-                    disabled={analyzing || loading}
+                    disabled={analyzing || loading || documentScansRemaining === 0}
                   />
                   {uploadedFiles.length > 0 && !analyzing && (
                     <Button

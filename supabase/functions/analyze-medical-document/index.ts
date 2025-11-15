@@ -12,6 +12,92 @@ serve(async (req) => {
   }
 
   try {
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check user role and limits
+    const { data: roles } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+
+    const isSubscriber = roles?.some(r => r.role === 'subscriber' || r.role === 'admin');
+    const monthlyLimit = isSubscriber ? 20 : 2; // Subscribers: 20/month, Free: 2/month
+
+    // Check and update usage
+    const today = new Date().toISOString().split('T')[0];
+    const currentMonth = today.substring(0, 7); // YYYY-MM format
+    
+    let { data: usage } = await supabaseClient
+      .from('user_chat_usage')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    // Initialize or reset monthly count if needed
+    const lastAnalysisMonth = usage?.last_document_analysis_date?.substring(0, 7);
+    if (!usage || lastAnalysisMonth !== currentMonth) {
+      const { data: newUsage } = await supabaseClient
+        .from('user_chat_usage')
+        .upsert({
+          user_id: user.id,
+          document_analysis_count: 0,
+          last_document_analysis_date: today,
+          daily_count: usage?.daily_count || 0,
+          monthly_count: usage?.monthly_count || 0,
+          last_reset_date: usage?.last_reset_date || today,
+        })
+        .select()
+        .single();
+      
+      usage = newUsage;
+    }
+
+    // Check if user has exceeded monthly limit
+    if (usage && usage.document_analysis_count >= monthlyLimit) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Monthly document analysis limit reached',
+          limit: monthlyLimit,
+          current: usage.document_analysis_count,
+          upgradeMessage: isSubscriber 
+            ? 'You have reached your monthly limit. Your scans will reset next month.' 
+            : 'You have used all your free document scans. Upgrade to Subscriber for 20 scans per month.',
+          remaining: 0
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Increment usage counter
+    await supabaseClient
+      .from('user_chat_usage')
+      .update({ 
+        document_analysis_count: (usage?.document_analysis_count || 0) + 1,
+        last_document_analysis_date: today
+      })
+      .eq('user_id', user.id);
+
     const body = await req.json();
     const { documentText, fileName, imageData, fileType } = body;
 
