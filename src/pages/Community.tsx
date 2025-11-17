@@ -58,10 +58,10 @@ const Community = () => {
 
   const checkAccess = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
       // Always fetch posts for public viewing
       await fetchPosts();
+      
+      const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         setLoading(false);
@@ -293,87 +293,37 @@ const Community = () => {
     );
   }
 
-  if (!hasAccess) {
-    return (
-      <>
-        <SEO
-          title="Community - Subscriber Only"
-          description="Join our subscriber community for the latest research, medical advances, and peer support for ectopic heartbeats and PVCs."
-          keywords="ectopic heartbeat community, PVC support group, heart palpitations forum"
-        />
-        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
-        <div className="container mx-auto px-4 py-12">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/dashboard')}
-            className="mb-6"
-          >
-            ← Back to Dashboard
-          </Button>
-
-          <div className="max-w-2xl mx-auto text-center space-y-6">
-            <Lock className="w-24 h-24 mx-auto text-muted-foreground" />
-            <h1 className="text-4xl font-bold">Subscriber Community</h1>
-            <p className="text-xl text-muted-foreground">
-              Connect with others who understand your journey with ectopic heartbeats
-            </p>
-            
-            <Card className="p-8 space-y-4 text-left">
-              <h2 className="text-2xl font-semibold">What You'll Get:</h2>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>✓ Latest research and medical advances</li>
-                <li>✓ Peer support from people who understand</li>
-                <li>✓ Moderated, spam-free environment</li>
-                <li>✓ Personal stories and experiences</li>
-                <li>✓ Evidence-based information</li>
-              </ul>
-            </Card>
-
-            <div className="flex gap-4 justify-center">
-              <Button onClick={() => navigate('/pricing')} size="lg">
-                View Subscription Plans
-              </Button>
-              <Button 
-                onClick={() => navigate('/dashboard')} 
-                variant="outline" 
-                size="lg"
-              >
-                Back to Dashboard
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-      </>
-    );
-  }
-
   return (
     <>
       <SEO
-        title="Community - Ectopic Heartbeat Research & Support"
-        description="Latest research, medical advances, and personal stories about ectopic heartbeats (PVCs). Connect with others who understand your journey with premature ventricular contractions."
-        keywords="ectopic heartbeat research, PVC studies, heart palpitations support, premature ventricular contractions information, ectopic beat stories"
+        title="Community Blog - Latest Research & Stories About Ectopic Heartbeats"
+        description="Free access to the latest research, medical advances, personal stories, and evidence-based information about ectopic heartbeats, PVCs, and heart palpitations. Join our supportive community."
+        keywords="ectopic heartbeat blog, PVC research, heart palpitations information, ectopic beats support, cardiac arrhythmia"
       />
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
       <div className="container mx-auto px-4 py-12">
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/')}
           className="mb-6"
         >
-          ← Back to Dashboard
+          ← Home
         </Button>
 
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">Community</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">Community Blog</h1>
               <p className="text-muted-foreground">
-                {hasAccess 
-                  ? "Research, guides, and personal stories from the community" 
-                  : "Read-only access. Subscribe to join discussions and post content."}
+                Latest research, medical advances, and community insights about ectopic heartbeats
               </p>
+              {!hasAccess && (
+                <Card className="mt-4 p-4 bg-primary/5 border-primary/20">
+                  <p className="text-sm">
+                    💬 Want to join the conversation? <Button variant="link" className="p-0 h-auto" onClick={() => navigate('/pricing')}>Subscribe</Button> to comment and connect with our community
+                  </p>
+                </Card>
+              )}
             </div>
             {isAdmin && (
               <Button size="lg" className="gap-2" onClick={() => setCreateDialogOpen(true)}>
