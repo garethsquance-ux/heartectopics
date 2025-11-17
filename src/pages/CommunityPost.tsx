@@ -63,6 +63,7 @@ const CommunityPost = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
 
@@ -84,7 +85,9 @@ const CommunityPost = () => {
       .eq('user_id', session.user.id);
 
     const userIsAdmin = roles?.some(r => r.role === 'admin') || false;
+    const userHasAccess = roles?.some(r => r.role === 'subscriber' || r.role === 'admin') || false;
     setIsAdmin(userIsAdmin);
+    setHasAccess(userHasAccess);
   };
 
   const fetchPost = async () => {
@@ -328,20 +331,28 @@ const CommunityPost = () => {
             <Card className="p-6 space-y-6">
               <h2 className="text-2xl font-semibold">Comments ({comments.length})</h2>
               
-              <div className="space-y-4">
-                <Textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Share your thoughts..."
-                  rows={4}
-                />
-                <Button 
-                  onClick={handleSubmitComment}
-                  disabled={submitting || !newComment.trim()}
-                >
-                  Post Comment
-                </Button>
-              </div>
+              {hasAccess ? (
+                <div className="space-y-4">
+                  <Textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Share your thoughts..."
+                    rows={4}
+                  />
+                  <Button 
+                    onClick={handleSubmitComment}
+                    disabled={submitting || !newComment.trim()}
+                  >
+                    Post Comment
+                  </Button>
+                </div>
+              ) : (
+                <Card className="p-4 bg-primary/5 border-primary/20">
+                  <p className="text-sm text-center">
+                    💬 <Button variant="link" className="p-0 h-auto" onClick={() => navigate('/pricing')}>Subscribe</Button> to join the conversation and comment on posts
+                  </p>
+                </Card>
+              )}
 
               <div className="space-y-4">
                 {comments.map((comment) => (
