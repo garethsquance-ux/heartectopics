@@ -363,8 +363,10 @@ const CommunityPost = () => {
                   h1: ({node, ...props}) => <h1 {...props} />,
                   h2: ({node, ...props}) => <h2 className="scroll-mt-8" {...props} />,
                   h3: ({node, ...props}) => <h3 className="scroll-mt-6" {...props} />,
+                  h4: ({node, ...props}) => <h4 className="text-lg font-bold mt-6 mb-3" {...props} />,
                   p: ({node, ...props}) => <p {...props} />,
-                  strong: ({node, ...props}) => <strong className="font-extrabold" {...props} />,
+                  strong: ({node, ...props}) => <strong className="font-black text-foreground" {...props} />,
+                  em: ({node, ...props}) => <em className="italic" {...props} />,
                   ul: ({node, ...props}) => <ul className="space-y-3 my-6 pl-1" {...props} />,
                   ol: ({node, ...props}) => <ol className="space-y-8 my-8" {...props} />,
                   li: ({node, children, ...props}) => {
