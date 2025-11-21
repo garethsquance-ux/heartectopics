@@ -14,6 +14,7 @@ import { z } from "zod";
 import BottomNavigation from "@/components/BottomNavigation";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const commentSchema = z.object({
   content: z.string()
@@ -362,6 +363,7 @@ const CommunityPost = () => {
               [&_ul>li]:flex [&_ul>li]:gap-3 [&_ul>li]:mb-3
               animate-fade-in">
               <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({node, ...props}) => <h1 {...props} />,
                   h2: ({node, ...props}) => <h2 className="scroll-mt-8" {...props} />,
