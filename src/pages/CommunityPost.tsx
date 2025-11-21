@@ -266,11 +266,37 @@ const CommunityPost = () => {
         title={post.title}
         description={post.content.substring(0, 155) + "..."}
         keywords={`${post.category.replace(/_/g, ' ')}, ectopic heartbeats, PVC, heart palpitations`}
+        canonicalUrl={`${window.location.origin}/community/${post.id}`}
         ogType="article"
         article={{
           publishedTime: post.created_at,
           section: post.category,
           tags: ['ectopic heartbeats', 'PVC', post.category.replace(/_/g, ' ')]
+        }}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": post.title,
+          "description": post.content.substring(0, 155) + "...",
+          "datePublished": post.created_at,
+          "author": {
+            "@type": "Organization",
+            "name": "Ectopic Heartbeat Support"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Ectopic Heartbeat Support",
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${window.location.origin}/og-image.jpg`
+            }
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `${window.location.origin}/community/${post.id}`
+          },
+          "articleSection": post.category.replace(/_/g, ' '),
+          "keywords": `${post.category.replace(/_/g, ' ')}, ectopic heartbeats, PVC, heart palpitations`
         }}
       />
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20 md:pb-0">
