@@ -350,7 +350,7 @@ const CommunityPost = () => {
             <div className="prose prose-lg max-w-none dark:prose-invert
               prose-headings:font-extrabold prose-headings:tracking-tight
               prose-h1:text-3xl prose-h1:mb-8 prose-h1:mt-16 prose-h1:pt-8 prose-h1:pb-6 prose-h1:border-b-2 prose-h1:border-border/20
-              prose-h2:text-2xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:pt-6 prose-h2:font-bold prose-h2:tracking-tight
+              prose-h2:text-2xl prose-h2:mb-8 prose-h2:mt-2 prose-h2:font-extrabold prose-h2:tracking-tight
               prose-h3:text-xl prose-h3:mb-5 prose-h3:mt-8 prose-h3:font-bold
               prose-h4:text-lg prose-h4:mb-4 prose-h4:mt-6 prose-h4:font-bold
               prose-p:text-base prose-p:leading-relaxed prose-p:mb-6 prose-p:text-foreground/90
@@ -358,7 +358,7 @@ const CommunityPost = () => {
               prose-ul:my-5 prose-ul:space-y-2 prose-ul:pl-6 prose-ul:list-none
               prose-ol:my-8 prose-ol:space-y-6 prose-ol:list-none prose-ol:pl-0
               prose-li:text-foreground/90 prose-li:leading-relaxed
-              [&_hr]:my-12 [&_hr]:border-t [&_hr]:border-border/20
+              [&_hr]:my-10 [&_hr]:border-t-2 [&_hr]:border-border/30
               [&_ol>li]:mb-8 [&_ol>li>p:first-child]:font-bold [&_ol>li>p:first-child]:mb-4
               [&_ul>li]:flex [&_ul>li]:gap-3 [&_ul>li]:mb-3
               animate-fade-in">
