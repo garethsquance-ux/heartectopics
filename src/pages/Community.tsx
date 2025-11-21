@@ -32,6 +32,7 @@ interface Post {
   author_id: string;
   display_order: number | null;
   comments_enabled: boolean;
+  view_count: number | null;
 }
 
 const Community = () => {
@@ -412,6 +413,15 @@ const Community = () => {
                         <span className="text-sm text-muted-foreground">
                           {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                         </span>
+                        {isAdmin && post.view_count !== null && (
+                          <Badge variant="outline" className="gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            {post.view_count} views
+                          </Badge>
+                        )}
                       </div>
                       <h2 className="text-2xl font-semibold">{post.title}</h2>
                       <p className="text-muted-foreground line-clamp-2">

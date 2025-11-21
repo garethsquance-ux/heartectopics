@@ -43,6 +43,7 @@ interface Post {
   category: string;
   created_at: string;
   comments_enabled: boolean;
+  view_count: number | null;
 }
 
 interface Comment {
@@ -71,7 +72,23 @@ const CommunityPost = () => {
     checkUserRole();
     fetchPost();
     fetchComments();
+    
+    // Increment view count when post is loaded
+    if (postId) {
+      incrementViewCount();
+    }
   }, [postId]);
+
+  const incrementViewCount = async () => {
+    try {
+      await supabase.functions.invoke('increment-post-view', {
+        body: { postId }
+      });
+    } catch (error) {
+      // Silently fail - don't disrupt user experience if view count fails
+      console.error('Failed to increment view count:', error);
+    }
+  };
 
   const checkUserRole = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -315,9 +332,20 @@ const CommunityPost = () => {
               {post.category.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
             </Badge>
             <h1 className="text-4xl font-bold">{post.title}</h1>
-            <p className="text-sm text-muted-foreground">
-              Posted {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                Posted {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+              </p>
+              {isAdmin && post.view_count !== null && (
+                <Badge variant="outline" className="gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  {post.view_count} views
+                </Badge>
+              )}
+            </div>
             <div className="prose prose-lg max-w-none dark:prose-invert
               prose-headings:font-extrabold prose-headings:tracking-tight
               prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:pb-3 prose-h1:border-b-2 prose-h1:border-primary/20

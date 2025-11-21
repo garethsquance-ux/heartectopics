@@ -67,6 +67,7 @@ export type Database = {
           is_published: boolean | null
           title: string
           updated_at: string
+          view_count: number | null
         }
         Insert: {
           author_id: string
@@ -79,6 +80,7 @@ export type Database = {
           is_published?: boolean | null
           title: string
           updated_at?: string
+          view_count?: number | null
         }
         Update: {
           author_id?: string
@@ -91,6 +93,7 @@ export type Database = {
           is_published?: boolean | null
           title?: string
           updated_at?: string
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -417,6 +420,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_post_views: { Args: { post_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "free" | "subscriber" | "admin" | "moderator" | "premium"

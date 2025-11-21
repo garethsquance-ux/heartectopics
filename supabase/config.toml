@@ -44,3 +44,6 @@ verify_jwt = true
 
 [functions.generate-sitemap]
 verify_jwt = false
+
+[functions.increment-post-view]
+verify_jwt = false
