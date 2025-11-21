@@ -348,30 +348,40 @@ const CommunityPost = () => {
             </div>
             <div className="prose prose-lg max-w-none dark:prose-invert
               prose-headings:font-extrabold prose-headings:tracking-tight
-              prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-10 prose-h1:pb-3 prose-h1:border-b-2 prose-h1:border-primary/20
-              prose-h2:text-3xl prose-h2:mb-4 prose-h2:mt-8 prose-h2:text-primary prose-h2:font-black
-              prose-h3:text-2xl prose-h3:mb-3 prose-h3:mt-6 prose-h3:text-primary/90 prose-h3:font-bold
-              prose-p:text-base prose-p:leading-7 prose-p:mb-6 prose-p:text-foreground/90
-              prose-strong:text-primary prose-strong:font-semibold
-              prose-ul:my-4 prose-ul:space-y-2
-              prose-li:text-foreground/90 prose-li:leading-relaxed
-              prose-ol:my-6 prose-ol:space-y-6 prose-ol:counter-reset-[item]
-              [&_ol>li]:mb-8 [&_ol>li]:pb-6 [&_ol>li]:border-b [&_ol>li]:border-border/30
+              prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-12 prose-h1:pt-8 prose-h1:pb-4 prose-h1:border-b-2 prose-h1:border-primary/30
+              prose-h2:text-2xl prose-h2:mb-5 prose-h2:mt-10 prose-h2:pt-6 prose-h2:text-primary prose-h2:font-black
+              prose-h3:text-xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-primary/90 prose-h3:font-bold
+              prose-p:text-base prose-p:leading-8 prose-p:mb-6 prose-p:text-foreground/90
+              prose-strong:text-primary prose-strong:font-bold prose-strong:bg-primary/5 prose-strong:px-1.5 prose-strong:py-0.5 prose-strong:rounded
+              prose-ul:my-6 prose-ul:space-y-3 prose-ul:pl-2
+              prose-li:text-foreground/85 prose-li:leading-relaxed prose-li:mb-2
+              prose-ol:my-8 prose-ol:space-y-8 prose-ol:counter-reset-[item]
+              [&_ol>li]:mb-10 [&_ol>li]:pb-8 [&_ol>li]:border-b [&_ol>li]:border-border/20
               [&_ol>li:last-child]:border-b-0
+              [&_hr]:my-12 [&_hr]:border-border/30
               animate-fade-in">
               <ReactMarkdown
                 components={{
                   h1: ({node, ...props}) => <h1 className="flex items-center gap-2" {...props} />,
-                  h2: ({node, ...props}) => <h2 className="flex items-center gap-2" {...props} />,
-                  h3: ({node, ...props}) => <h3 className="flex items-center gap-2" {...props} />,
-                  strong: ({node, ...props}) => <strong className="bg-primary/10 px-1 rounded" {...props} />,
-                  ul: ({node, ...props}) => <ul className="space-y-2 ml-4" {...props} />,
-                  li: ({node, ...props}) => (
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1.5 text-xs">●</span>
-                      <span className="flex-1" {...props} />
-                    </li>
-                  ),
+                  h2: ({node, ...props}) => <h2 className="flex items-center gap-2 scroll-mt-8" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="flex items-center gap-2 scroll-mt-6" {...props} />,
+                  p: ({node, ...props}) => <p className="mb-5" {...props} />,
+                  strong: ({node, ...props}) => <strong {...props} />,
+                  ul: ({node, ...props}) => <ul className="space-y-2.5 my-6" {...props} />,
+                  ol: ({node, ...props}) => <ol className="space-y-8 my-8" {...props} />,
+                  li: ({node, children, ...props}) => {
+                    const parent = (node as any)?.parent?.tagName;
+                    if (parent === 'ul') {
+                      return (
+                        <li className="flex items-start gap-3 pl-1" {...props}>
+                          <span className="text-primary mt-1.5 font-bold">•</span>
+                          <span className="flex-1">{children}</span>
+                        </li>
+                      );
+                    }
+                    return <li className="pl-2" {...props}>{children}</li>;
+                  },
+                  hr: ({node, ...props}) => <hr className="my-10 border-t-2 border-border/20" {...props} />,
                 }}
               >
                 {post.content}
