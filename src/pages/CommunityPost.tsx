@@ -349,7 +349,7 @@ const CommunityPost = () => {
             <div className="prose prose-lg max-w-none dark:prose-invert
               prose-headings:font-extrabold prose-headings:tracking-tight
               prose-h1:text-3xl prose-h1:mb-8 prose-h1:mt-16 prose-h1:pt-8 prose-h1:pb-6 prose-h1:border-b-2 prose-h1:border-border/20
-              prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-12 prose-h2:pt-8 prose-h2:font-black prose-h2:tracking-tight
+              prose-h2:text-3xl prose-h2:mb-8 prose-h2:mt-12 prose-h2:pt-8 prose-h2:font-black prose-h2:tracking-tight
               prose-h3:text-xl prose-h3:mb-5 prose-h3:mt-8 prose-h3:font-bold
               prose-p:text-base prose-p:leading-8 prose-p:mb-5 prose-p:text-foreground/90
               prose-strong:text-foreground prose-strong:font-bold
