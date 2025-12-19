@@ -14,6 +14,7 @@ import ComposeDoctorLetterDialog from "@/components/ComposeDoctorLetterDialog";
 import FloatingWellnessChat from "@/components/FloatingWellnessChat";
 import BottomNavigation from "@/components/BottomNavigation";
 import DesktopNavigation from "@/components/DesktopNavigation";
+import PatternInsightsCard from "@/components/PatternInsightsCard";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -425,6 +426,9 @@ const Dashboard = () => {
             <ExportDataButton />
           </div>
         </div>
+
+        {/* Pattern Insights */}
+        <PatternInsightsCard episodeCount={stats.total} />
 
         <Card className="shadow-card">
           <CardHeader>
