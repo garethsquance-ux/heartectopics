@@ -355,21 +355,43 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
         throw new Error("Not authenticated");
       }
 
-      // Insert episode
-      const { data: episode, error: episodeError } = await supabase
-        .from('heart_episodes')
-        .insert({
-          user_id: user.id,
-          episode_date: episodeDate || new Date().toISOString(),
-          symptoms: symptoms || null,
-          notes: notes || null,
-          duration_seconds: duration ? parseInt(duration) : null,
-          severity,
-        })
-        .select()
-        .single();
+      let episode;
 
-      if (episodeError) throw episodeError;
+      if (editEpisode) {
+        // UPDATE existing episode
+        const { data, error: updateError } = await supabase
+          .from('heart_episodes')
+          .update({
+            episode_date: episodeDate || new Date().toISOString(),
+            symptoms: symptoms || null,
+            notes: notes || null,
+            duration_seconds: duration ? parseInt(duration) : null,
+            severity,
+          })
+          .eq('id', editEpisode.id)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+        episode = data;
+      } else {
+        // INSERT new episode
+        const { data, error: episodeError } = await supabase
+          .from('heart_episodes')
+          .insert({
+            user_id: user.id,
+            episode_date: episodeDate || new Date().toISOString(),
+            symptoms: symptoms || null,
+            notes: notes || null,
+            duration_seconds: duration ? parseInt(duration) : null,
+            severity,
+          })
+          .select()
+          .single();
+
+        if (episodeError) throw episodeError;
+        episode = data;
+      }
 
       // If documents were uploaded, save them to storage and link to episode
       if (uploadedFiles.length > 0 && episode) {
@@ -399,10 +421,10 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
       }
 
       toast({
-        title: "Episode logged",
+        title: editEpisode ? "Episode updated" : "Episode logged",
         description: uploadedFiles.length > 0
           ? `Your episode and ${uploadedFiles.length} document(s) have been saved successfully.`
-          : "Your episode has been recorded successfully.",
+          : editEpisode ? "Your episode has been updated." : "Your episode has been recorded successfully.",
       });
 
       // Reset form
@@ -434,7 +456,7 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
           {children}
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto w-[95vw] mx-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{editEpisode ? "Edit Episode" : "Log Heart Episode"}</DialogTitle>
           <DialogDescription>
@@ -552,17 +574,28 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="severity">Severity</Label>
-              <Select value={severity} onValueChange={setSeverity}>
-                <SelectTrigger id="severity">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mild">Mild</SelectItem>
-                  <SelectItem value="moderate">Moderate</SelectItem>
-                  <SelectItem value="severe">Severe</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Severity</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: "mild", label: "😌 Mild", color: "bg-green-100 border-green-500 text-green-700 dark:bg-green-950 dark:text-green-300" },
+                  { value: "moderate", label: "😟 Moderate", color: "bg-yellow-100 border-yellow-500 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300" },
+                  { value: "severe", label: "😰 Severe", color: "bg-red-100 border-red-500 text-red-700 dark:bg-red-950 dark:text-red-300" },
+                ].map((option) => (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    variant="outline"
+                    className={`h-12 text-sm font-medium transition-all ${
+                      severity === option.value 
+                        ? `${option.color} border-2` 
+                        : "hover:border-primary/50"
+                    }`}
+                    onClick={() => setSeverity(option.value)}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -577,13 +610,35 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration (seconds)</Label>
+              <Label htmlFor="duration">Duration</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {[
+                  { label: "Few secs", value: "5" },
+                  { label: "30 secs", value: "30" },
+                  { label: "1 min", value: "60" },
+                  { label: "2 min", value: "120" },
+                  { label: "5 min", value: "300" },
+                  { label: "10+ min", value: "600" },
+                ].map((preset) => (
+                  <Button
+                    key={preset.value}
+                    type="button"
+                    variant={duration === preset.value ? "default" : "outline"}
+                    size="sm"
+                    className="h-9 text-xs sm:text-sm"
+                    onClick={() => setDuration(preset.value)}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
               <Input
                 id="duration"
                 type="number"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                placeholder="How long did it last?"
+                placeholder="Or enter exact seconds"
+                className="h-11"
               />
             </div>
 
