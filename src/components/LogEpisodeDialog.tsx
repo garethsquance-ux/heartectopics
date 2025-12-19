@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
+import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, Mic, MicOff, Square } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Episode {
@@ -60,7 +60,17 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
   const [isSubscriber, setIsSubscriber] = useState(false);
   const { toast } = useToast();
 
-  // Update form when editing an episode
+  // Voice recording for symptoms
+  const symptomsVoice = useVoiceRecorder({
+    onTranscription: (text) => setSymptoms((prev) => prev ? `${prev} ${text}` : text),
+    maxDuration: 30,
+  });
+
+  // Voice recording for notes
+  const notesVoice = useVoiceRecorder({
+    onTranscription: (text) => setNotes((prev) => prev ? `${prev} ${text}` : text),
+    maxDuration: 60,
+  });
   useEffect(() => {
     if (editEpisode) {
       setEpisodeDate(editEpisode.episode_date ? new Date(editEpisode.episode_date).toISOString().slice(0, 16) : "");
@@ -599,12 +609,39 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="symptoms">Symptoms</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="symptoms">Symptoms</Label>
+                <Button
+                  type="button"
+                  variant={symptomsVoice.isRecording ? "destructive" : "outline"}
+                  size="sm"
+                  className="gap-1 h-8"
+                  onClick={symptomsVoice.isRecording ? symptomsVoice.stopRecording : symptomsVoice.startRecording}
+                  disabled={symptomsVoice.isTranscribing}
+                >
+                  {symptomsVoice.isTranscribing ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Transcribing...
+                    </>
+                  ) : symptomsVoice.isRecording ? (
+                    <>
+                      <Square className="h-3 w-3" />
+                      Stop
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-3 w-3" />
+                      Voice
+                    </>
+                  )}
+                </Button>
+              </div>
               <Textarea
                 id="symptoms"
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
-                placeholder="Describe what you felt during this episode"
+                placeholder="Describe what you felt, or tap Voice to speak"
                 className="min-h-[80px]"
               />
             </div>
@@ -643,12 +680,39 @@ const LogEpisodeDialog = ({ children, onEpisodeAdded, open, onOpenChange, editEp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Additional Notes (Optional)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                <Button
+                  type="button"
+                  variant={notesVoice.isRecording ? "destructive" : "outline"}
+                  size="sm"
+                  className="gap-1 h-8"
+                  onClick={notesVoice.isRecording ? notesVoice.stopRecording : notesVoice.startRecording}
+                  disabled={notesVoice.isTranscribing}
+                >
+                  {notesVoice.isTranscribing ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Transcribing...
+                    </>
+                  ) : notesVoice.isRecording ? (
+                    <>
+                      <Square className="h-3 w-3" />
+                      Stop
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-3 w-3" />
+                      Voice
+                    </>
+                  )}
+                </Button>
+              </div>
               <Textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any other details you'd like to record"
+                placeholder="Any other details, or tap Voice to speak"
                 className="min-h-[80px]"
               />
             </div>
