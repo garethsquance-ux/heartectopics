@@ -17,6 +17,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verify cron secret token for authentication
+    const authHeader = req.headers.get("Authorization");
+    const expectedToken = Deno.env.get("CRON_SECRET_TOKEN");
+    
+    if (!expectedToken) {
+      console.error("CRON_SECRET_TOKEN not configured");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+      console.warn("Unauthorized access attempt to send-weekly-digest");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get all subscribers
