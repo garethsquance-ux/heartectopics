@@ -1,8 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const PERMANENT_ADMIN_EMAIL = 'garethsquance@gmail.com';
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -34,14 +32,24 @@ serve(async (req) => {
     logStep('Function started');
 
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('No authorization header provided');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ ok: false, error: 'Authentication required' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError || !userData.user?.id) {
+      console.error('[MANAGE-ROLES] Auth failed:', userError?.message);
+      return new Response(JSON.stringify({ ok: false, error: 'Authentication failed' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
     const caller = userData.user;
-    if (!caller?.id) throw new Error('User not authenticated');
-    logStep('Caller authenticated', { userId: caller.id, email: caller.email });
+    logStep('Caller authenticated', { userId: caller.id });
 
     // Check caller is admin
     const { data: callerRoles, error: rolesErr } = await supabase
@@ -50,27 +58,46 @@ serve(async (req) => {
       .eq('user_id', caller.id)
       .eq('role', 'admin')
       .limit(1);
-    if (rolesErr) throw new Error(`Role check failed: ${rolesErr.message}`);
+    if (rolesErr) {
+      console.error('[MANAGE-ROLES] Role check failed:', rolesErr.message);
+      return new Response(JSON.stringify({ ok: false, error: 'Authorization check failed' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
     if (!callerRoles || callerRoles.length === 0) {
-      return new Response(JSON.stringify({ ok: false, error: 'Forbidden: admin only' }), {
+      return new Response(JSON.stringify({ ok: false, error: 'Access denied' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
       });
     }
 
-    const body = (await req.json()) as ManageBody;
-    if (!body?.action || !body?.role || !body?.user_email) {
-      throw new Error('Missing required fields: action, role, user_email');
+    let body: ManageBody;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ ok: false, error: 'Invalid request format' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
-    if (!['add', 'remove'].includes(body.action)) throw new Error('Invalid action');
-    if (!['subscriber', 'moderator', 'admin'].includes(body.role)) throw new Error('Invalid role');
+    
+    if (!body?.action || !body?.role || !body?.user_email) {
+      return new Response(JSON.stringify({ ok: false, error: 'Invalid request' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+    if (!['add', 'remove'].includes(body.action) || !['subscriber', 'moderator', 'admin'].includes(body.role)) {
+      return new Response(JSON.stringify({ ok: false, error: 'Invalid request' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
-    // SECURITY: Prevent anyone from modifying admin role except for the permanent admin
+    // SECURITY: Prevent anyone from modifying admin role via this endpoint
     if (body.role === 'admin') {
-      return new Response(JSON.stringify({ 
-        ok: false, 
-        error: 'Forbidden: admin role cannot be modified via this endpoint' 
-      }), {
+      return new Response(JSON.stringify({ ok: false, error: 'Operation not permitted' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
       });
@@ -83,14 +110,24 @@ serve(async (req) => {
       .eq('email', body.user_email)
       .single();
 
-    if (profErr || !targetProfile) throw new Error('Target user not found');
+    if (profErr || !targetProfile) {
+      console.error('[MANAGE-ROLES] User lookup failed:', profErr?.message);
+      return new Response(JSON.stringify({ ok: false, error: 'Operation failed' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
     if (body.action === 'add') {
       const { error: insertErr } = await supabase
         .from('user_roles')
         .insert({ user_id: targetProfile.id, role: body.role as any });
       if (insertErr && insertErr.code !== '23505') { // ignore unique violation
-        throw new Error(`Failed to add role: ${insertErr.message}`);
+        console.error('[MANAGE-ROLES] Insert failed:', insertErr.message);
+        return new Response(JSON.stringify({ ok: false, error: 'Operation failed' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        });
       }
       logStep('Role added', { target: targetProfile.id, role: body.role });
       return new Response(JSON.stringify({ ok: true, message: 'Role added' }), {
@@ -103,7 +140,13 @@ serve(async (req) => {
         .delete()
         .eq('user_id', targetProfile.id)
         .eq('role', body.role);
-      if (delErr) throw new Error(`Failed to remove role: ${delErr.message}`);
+      if (delErr) {
+        console.error('[MANAGE-ROLES] Delete failed:', delErr.message);
+        return new Response(JSON.stringify({ ok: false, error: 'Operation failed' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        });
+      }
       logStep('Role removed', { target: targetProfile.id, role: body.role });
       return new Response(JSON.stringify({ ok: true, message: 'Role removed' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -111,9 +154,8 @@ serve(async (req) => {
       });
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    logStep('ERROR', { message });
-    return new Response(JSON.stringify({ ok: false, error: message }), {
+    console.error('[MANAGE-ROLES] Unexpected error:', error);
+    return new Response(JSON.stringify({ ok: false, error: 'An error occurred' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
