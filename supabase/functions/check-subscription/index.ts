@@ -78,6 +78,10 @@ serve(async (req) => {
     let productId = null;
     let subscriptionEnd = null;
 
+    // Product IDs for subscription tiers
+    const SUBSCRIBER_PRODUCT_ID = "prod_TQeFWEndLpmX6v";
+    const PREMIUM_PRODUCT_ID = "prod_TQeGa7lDb5GgOi";
+    
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
@@ -85,44 +89,59 @@ serve(async (req) => {
       productId = subscription.items.data[0].price.product;
       logStep("Determined subscription product", { productId });
 
-      // Update user role to 'subscriber' in database
-      const { error: checkRoleError } = await supabaseClient
-        .from('user_roles')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('role', 'subscriber')
-        .single();
-
-      if (checkRoleError) {
-        // Role doesn't exist, insert it
-        const { error: insertError } = await supabaseClient
-          .from('user_roles')
-          .insert({ user_id: user.id, role: 'subscriber' });
-        
-        if (insertError) {
-          logStep("Error inserting subscriber role", { error: insertError });
-        } else {
-          logStep("Subscriber role added successfully");
-        }
+      // Determine the role based on product
+      let role: 'subscriber' | 'premium' = 'subscriber';
+      if (productId === PREMIUM_PRODUCT_ID) {
+        role = 'premium';
       }
-    } else {
-      logStep("No active subscription found");
-      
-      // Remove subscriber role if subscription is not active
+      logStep("Determined role from product", { role, productId });
+
+      // First, remove any existing subscriber/premium role to ensure clean state
       const { error: deleteError } = await supabaseClient
         .from('user_roles')
         .delete()
         .eq('user_id', user.id)
-        .eq('role', 'subscriber');
+        .in('role', ['subscriber', 'premium']);
+
+      if (deleteError) {
+        logStep("Error cleaning existing roles", { error: deleteError });
+      }
+
+      // Insert the correct role
+      const { error: insertError } = await supabaseClient
+        .from('user_roles')
+        .insert({ user_id: user.id, role: role });
+      
+      if (insertError) {
+        logStep("Error inserting role", { error: insertError });
+      } else {
+        logStep(`${role} role added successfully`);
+      }
+    } else {
+      logStep("No active subscription found");
+      
+      // Remove subscriber/premium role if subscription is not active
+      const { error: deleteError } = await supabaseClient
+        .from('user_roles')
+        .delete()
+        .eq('user_id', user.id)
+        .in('role', ['subscriber', 'premium']);
       
       if (deleteError) {
-        logStep("Error removing subscriber role", { error: deleteError });
+        logStep("Error removing subscriber/premium role", { error: deleteError });
       }
+    }
+
+    // Determine tier name for frontend
+    let tier = null;
+    if (hasActiveSub) {
+      tier = productId === PREMIUM_PRODUCT_ID ? 'premium' : 'subscriber';
     }
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
+      tier: tier,
       subscription_end: subscriptionEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
