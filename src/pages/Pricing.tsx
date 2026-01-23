@@ -7,6 +7,12 @@ import { Card } from "@/components/ui/card";
 import { Check, Zap, Crown, Heart, Gift } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { analytics } from "@/lib/analytics";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const SUBSCRIBER_PRICE_ID = "price_1STmxKBv24OAipkGWPy0dkrD";
 const PREMIUM_PRICE_ID = "price_1STmxgBv24OAipkGcdieqvG1";
@@ -224,6 +230,49 @@ const Pricing = () => {
                 </div>
               </Card>
             ))}
+          </div>
+
+          {/* FAQ Section */}
+          <div className="mt-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="trial">
+                <AccordionTrigger className="text-left">How does the 7-day free trial work?</AccordionTrigger>
+                <AccordionContent>
+                  When you sign up for the Subscriber plan, you get full access to all Subscriber features for 7 days completely free. Your card won't be charged until the trial ends. You can cancel anytime during the trial and you won't be charged anything.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="cancel">
+                <AccordionTrigger className="text-left">Can I cancel my subscription anytime?</AccordionTrigger>
+                <AccordionContent>
+                  Yes! You can cancel your subscription at any time from your dashboard. When you cancel, you'll continue to have access to your paid features until the end of your current billing period. There are no cancellation fees or penalties.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="difference">
+                <AccordionTrigger className="text-left">What's the difference between Subscriber and Premium?</AccordionTrigger>
+                <AccordionContent>
+                  The Subscriber plan gives you unlimited episode logging, more AI chat messages, community access, and doctor letter generation. Premium includes everything in Subscriber plus the "During Episode" emergency mode for real-time support during ectopic episodes, AI-powered trigger analysis to identify patterns, and predictive insights to help you anticipate episodes.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="data">
+                <AccordionTrigger className="text-left">What happens to my data if I cancel?</AccordionTrigger>
+                <AccordionContent>
+                  Your data is always yours. You can export all your logged episodes as a CSV file anytime, even on the free plan. If you cancel, you'll still have access to view your historical data, you just won't be able to use the premium features.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="payment">
+                <AccordionTrigger className="text-left">What payment methods do you accept?</AccordionTrigger>
+                <AccordionContent>
+                  We accept all major credit and debit cards (Visa, Mastercard, American Express) through our secure payment processor, Stripe. Your payment information is never stored on our servers.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="refund">
+                <AccordionTrigger className="text-left">Do you offer refunds?</AccordionTrigger>
+                <AccordionContent>
+                  If you're not satisfied with your subscription, contact us at gareth@heartectopics.com within 14 days of your first payment and we'll provide a full refund, no questions asked.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
 
           <div className="mt-12 text-center">
