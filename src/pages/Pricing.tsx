@@ -145,6 +145,15 @@ const Pricing = () => {
       
       <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background py-12 px-4">
         <div className="max-w-6xl mx-auto">
+          {/* Urgency Banner */}
+          <div className="mb-8 flex justify-center">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/30 px-6 py-3 rounded-full animate-pulse">
+              <span className="text-2xl">🎉</span>
+              <span className="font-semibold text-primary">Limited Time Offer:</span>
+              <span className="text-foreground">Start your 7-day free trial today!</span>
+            </div>
+          </div>
+
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
             <p className="text-xl text-muted-foreground">
