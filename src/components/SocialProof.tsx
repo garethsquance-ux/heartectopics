@@ -60,7 +60,7 @@ export const SocialProof = () => {
         <div className="inline-flex items-center gap-3 bg-primary/10 px-6 py-3 rounded-full">
           <Users className="h-5 w-5 text-primary" />
           <span className="text-lg font-medium">
-            Trusted by <span className="text-primary font-bold">{userCount.toLocaleString()}+</span> users worldwide
+            Join our growing community
           </span>
         </div>
       </div>

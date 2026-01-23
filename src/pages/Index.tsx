@@ -5,6 +5,7 @@ import { Heart, Activity, MessageCircle, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import SocialProof from "@/components/SocialProof";
+import LeadMagnetForm from "@/components/LeadMagnetForm";
 import { analytics } from "@/lib/analytics";
 
 const Index = () => {
@@ -71,13 +72,12 @@ const Index = () => {
             Heart Wellness Tracker
           </h1>
 
-          <p className="text-xl md:text-2xl text-muted-foreground mb-4 leading-relaxed">
-            Understanding and managing ectopic heartbeats with confidence
+          <p className="text-xl md:text-2xl text-muted-foreground mb-4 leading-relaxed max-w-3xl mx-auto">
+            Finally understand your heart skips. Find your triggers. Reduce your anxiety.
           </p>
 
-          <p className="text-base md:text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Track your episodes, understand patterns, and get supportive guidance.
-            Non-diagnostic, support-focused wellness tool.
+          <p className="text-lg md:text-xl text-primary font-medium mb-12">
+            You're not alone.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -104,6 +104,11 @@ const Index = () => {
             <Button variant="link" onClick={() => navigate('/success-stories')}>Success Stories</Button>
             <Button variant="link" onClick={() => navigate('/community')}>Community</Button>
             <Button variant="link" onClick={() => navigate('/how-to')}>How To Use</Button>
+          </div>
+
+          {/* Lead Magnet Section */}
+          <div className="mb-16">
+            <LeadMagnetForm />
           </div>
 
           {/* Social Proof Section */}

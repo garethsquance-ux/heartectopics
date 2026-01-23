@@ -97,6 +97,27 @@ export type Database = {
         }
         Relationships: []
       }
+      email_leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       episode_documents: {
         Row: {
           created_at: string
