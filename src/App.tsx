@@ -36,6 +36,8 @@ const App = () => (
           <Route path="/community/:postId" element={<CommunityPost />} />
           <Route path="/success-stories" element={<SuccessStories />} />
           <Route path="/how-to" element={<HowTo />} />
+          <Route path="/howto" element={<HowTo />} />
+          <Route path="/howtouse" element={<HowTo />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/episode-mode" element={<EpisodeMode />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
