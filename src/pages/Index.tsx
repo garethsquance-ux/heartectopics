@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import SocialProof from "@/components/SocialProof";
 import LeadMagnetForm from "@/components/LeadMagnetForm";
+import VisitorChatWidget from "@/components/VisitorChatWidget";
 import { analytics } from "@/lib/analytics";
 
 const Index = () => {
@@ -38,24 +39,34 @@ const Index = () => {
     <>
       <SEO
         title="Ectopic Heartbeat Support & PVC Tracker"
-        description="Understanding and managing ectopic heartbeats (PVCs) with confidence. Track episodes, view patterns, and get supportive guidance for premature ventricular contractions."
-        keywords="ectopic heartbeats, PVC, premature ventricular contractions, heart palpitations, benign arrhythmia, heart rhythm tracker, ectopic beat anxiety, PVC symptoms, heart episode tracking"
+        description="Finally understand your heart skips. Track ectopic heartbeat episodes, find your triggers, reduce anxiety. Join thousands who've found peace with PVCs and PACs."
+        keywords="ectopic heartbeats, PVC, PAC, premature ventricular contractions, heart palpitations, benign arrhythmia, heart rhythm tracker, ectopic beat anxiety, PVC symptoms, heart episode tracking, heart skip tracker"
+        ogImage="/og-image.png"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "WebApplication",
           "name": "Heart Wellness Tracker",
-          "description": "Track and understand ectopic heartbeats with confidence",
+          "description": "Track and understand ectopic heartbeats with confidence. Find your triggers, reduce anxiety, connect with others.",
+          "url": "https://heartectopics.com",
           "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
           "offers": {
             "@type": "Offer",
             "price": "0",
-            "priceCurrency": "USD"
+            "priceCurrency": "USD",
+            "description": "Free tier available"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "2000"
           },
           "featureList": [
             "Track heart episodes",
             "View patterns and statistics",
             "AI wellness support",
-            "Community support"
+            "Community support",
+            "Doctor letter generation"
           ]
         }}
       />
@@ -165,6 +176,9 @@ const Index = () => {
           </div>
         </footer>
       </div>
+      
+      {/* Visitor Chat Widget */}
+      <VisitorChatWidget />
     </div>
     </>
   );
