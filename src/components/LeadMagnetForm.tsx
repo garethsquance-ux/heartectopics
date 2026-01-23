@@ -41,8 +41,8 @@ export const LeadMagnetForm = () => {
           throw error;
         }
       } else {
-        // Track conversion
-        analytics.leadCapture();
+        // Track conversion (console log for now)
+        console.log('[Analytics] lead_capture');
         
         // Send the guide email
         await supabase.functions.invoke("send-lead-magnet", {
