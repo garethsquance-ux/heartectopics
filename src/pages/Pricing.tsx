@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, Zap, Crown, Heart } from "lucide-react";
+import { Check, Zap, Crown, Heart, Gift } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { analytics } from "@/lib/analytics";
 
 const SUBSCRIBER_PRICE_ID = "price_1STmxKBv24OAipkGWPy0dkrD";
 const PREMIUM_PRICE_ID = "price_1STmxgBv24OAipkGcdieqvG1";
@@ -34,7 +35,7 @@ const Pricing = () => {
     }
   };
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleSubscribe = async (priceId: string, withTrial: boolean = false) => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -49,9 +50,16 @@ const Pricing = () => {
 
     setLoading(priceId);
 
+    // Track analytics
+    analytics.selectPlan(priceId === SUBSCRIBER_PRICE_ID ? 'subscriber' : 'premium');
+    if (withTrial) {
+      analytics.startTrial('subscriber');
+    }
+    analytics.startCheckout();
+
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId }
+        body: { priceId, withTrial }
       });
 
       if (error) throw error;
@@ -93,6 +101,7 @@ const Pricing = () => {
       icon: Zap,
       priceId: SUBSCRIBER_PRICE_ID,
       features: [
+        "7-day free trial",
         "Unlimited episode logging",
         "20 AI chat messages/day",
         "20 document scans/month",
@@ -101,9 +110,10 @@ const Pricing = () => {
         "Doctor letters",
         "Trigger tagging",
       ],
-      cta: "Subscribe",
+      cta: "Start Free Trial",
       current: currentTier === "subscriber",
       popular: true,
+      hasTrial: true,
     },
     {
       name: "Premium",
@@ -153,9 +163,18 @@ const Pricing = () => {
                 }`}
               >
                 {tier.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex gap-2">
                     <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
                       Most Popular
+                    </span>
+                  </div>
+                )}
+                
+                {tier.hasTrial && (
+                  <div className="absolute -top-4 right-4">
+                    <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-primary/20">
+                      <Gift className="h-3 w-3" />
+                      7-Day Free Trial
                     </span>
                   </div>
                 )}
@@ -178,14 +197,22 @@ const Pricing = () => {
                   ))}
                 </ul>
 
-                <Button
-                  className="w-full"
-                  variant={tier.current ? "outline" : tier.premium ? "default" : "secondary"}
-                  disabled={tier.disabled || tier.current || loading === tier.priceId}
-                  onClick={() => tier.priceId && handleSubscribe(tier.priceId)}
-                >
-                  {loading === tier.priceId ? "Processing..." : tier.current ? "Current Plan" : tier.cta}
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    className="w-full"
+                    variant={tier.current ? "outline" : tier.premium ? "default" : "secondary"}
+                    disabled={tier.disabled || tier.current || loading === tier.priceId}
+                    onClick={() => tier.priceId && handleSubscribe(tier.priceId, tier.hasTrial || false)}
+                  >
+                    {loading === tier.priceId ? "Processing..." : tier.current ? "Current Plan" : tier.cta}
+                  </Button>
+                  
+                  {tier.hasTrial && !tier.current && (
+                    <p className="text-xs text-center text-muted-foreground">
+                      No charge for 7 days. Cancel anytime.
+                    </p>
+                  )}
+                </div>
               </Card>
             ))}
           </div>
