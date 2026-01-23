@@ -33,10 +33,13 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get priceId from request body
-    const { priceId } = await req.json();
+    // Get priceId and trial option from request body
+    const { priceId, withTrial } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId });
+    logStep("Price ID received", { priceId, withTrial });
+
+    // Subscriber price ID that gets 7-day trial
+    const SUBSCRIBER_PRICE_ID = "price_1STmxKBv24OAipkGWPy0dkrD";
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
@@ -48,12 +51,26 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
+      
+      // Check if customer has had a trial before
+      const previousSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 100,
+      });
+      const hadTrial = previousSubs.data.some((sub: { trial_end: number | null }) => sub.trial_end !== null);
+      if (hadTrial && withTrial) {
+        logStep("Customer already used trial, skipping trial period");
+      }
     } else {
       logStep("No existing customer found");
     }
 
+    // Determine if trial should be applied (only for subscriber tier, first time)
+    const shouldApplyTrial = withTrial && priceId === SUBSCRIBER_PRICE_ID;
+    logStep("Trial decision", { shouldApplyTrial });
+
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -65,7 +82,17 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${req.headers.get("origin")}/dashboard?subscription=success`,
       cancel_url: `${req.headers.get("origin")}/pricing?subscription=cancelled`,
-    });
+    };
+
+    // Add trial period if applicable
+    if (shouldApplyTrial) {
+      sessionParams.subscription_data = {
+        trial_period_days: 7,
+      };
+      logStep("Adding 7-day trial to checkout");
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 

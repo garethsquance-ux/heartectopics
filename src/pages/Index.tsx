@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Heart, Activity, MessageCircle, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
+import SocialProof from "@/components/SocialProof";
+import { analytics } from "@/lib/analytics";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -11,6 +13,7 @@ const Index = () => {
 
   useEffect(() => {
     checkUser();
+    analytics.pageView('/');
   }, []);
 
   const checkUser = async () => {
@@ -83,7 +86,7 @@ const Index = () => {
               onClick={() => navigate('/auth')}
               className="h-14 px-8 text-lg font-medium"
             >
-              Get Started
+              Get Started Free
             </Button>
             <Button
               size="lg"
@@ -96,11 +99,16 @@ const Index = () => {
           </div>
 
           <div className="flex flex-wrap gap-4 justify-center mb-16 text-sm">
-            <Button variant="link" onClick={() => navigate('/pricing')}>Pricing</Button>
+            <Button variant="link" onClick={() => { analytics.viewPricing(); navigate('/pricing'); }}>Pricing</Button>
             <Button variant="link" onClick={() => navigate('/founder-story')}>Founder Story</Button>
             <Button variant="link" onClick={() => navigate('/success-stories')}>Success Stories</Button>
             <Button variant="link" onClick={() => navigate('/community')}>Community</Button>
             <Button variant="link" onClick={() => navigate('/how-to')}>How To Use</Button>
+          </div>
+
+          {/* Social Proof Section */}
+          <div className="mb-16">
+            <SocialProof />
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mt-16">

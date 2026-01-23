@@ -64,10 +64,18 @@ export const analytics = {
   completeSubscription: () => 
     trackEvent({ action: 'purchase', category: 'conversion' }),
 
+  // Subscription events
+  startTrial: (tier: string) =>
+    trackEvent({ action: 'start_trial', category: 'conversion', label: tier }),
+  selectPlan: (plan: string) =>
+    trackEvent({ action: 'select_plan', category: 'conversion', label: plan }),
+  
   // Page views (for SPA)
   pageView: (path: string) => {
     if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('config', 'G-XXXXXXXXXX', {
+      // Use actual GA4 measurement ID from env or fallback
+      const measurementId = (window as any).GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
+      window.gtag('config', measurementId, {
         page_path: path,
       });
     }
