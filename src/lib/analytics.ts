@@ -69,6 +69,8 @@ export const analytics = {
     trackEvent({ action: 'start_trial', category: 'conversion', label: tier }),
   selectPlan: (plan: string) =>
     trackEvent({ action: 'select_plan', category: 'conversion', label: plan }),
+  leadCapture: () =>
+    trackEvent({ action: 'lead_capture', category: 'conversion' }),
   
   // Page views (for SPA)
   pageView: (path: string) => {
